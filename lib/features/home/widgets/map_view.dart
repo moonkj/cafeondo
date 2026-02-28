@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
@@ -134,6 +135,7 @@ class _MapViewState extends ConsumerState<MapView> {
 
   void _onMapCreated(GoogleMapController controller) {
     _mapController = controller;
+    debugPrint('[MapView] GoogleMap created successfully');
     _applyMapStyle(controller);
   }
 
@@ -152,7 +154,12 @@ class _MapViewState extends ConsumerState<MapView> {
   {"featureType":"administrative.neighborhood","elementType":"labels.text.fill","stylers":[{"color":"#555555"}]}
 ]
 ''';
-    await controller.setMapStyle(style);
+    try {
+      await controller.setMapStyle(style);
+    } catch (e) {
+      // Map style application failed — map will render with default style
+      debugPrint('[MapView] setMapStyle error (non-fatal): $e');
+    }
   }
 
   void _goToMyLocation() {
@@ -171,6 +178,11 @@ class _MapViewState extends ConsumerState<MapView> {
         _buildMarkers(cafes);
       }
     });
+
+    // Log cafes error so it doesn't silently swallow map data failures
+    if (cafesAsync.hasError) {
+      debugPrint('[MapView] cafesProvider error: ${cafesAsync.error}');
+    }
 
     return Stack(
       children: [
