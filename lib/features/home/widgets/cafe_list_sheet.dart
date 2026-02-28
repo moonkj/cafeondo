@@ -1,3 +1,4 @@
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -99,7 +100,7 @@ class _SheetContent extends ConsumerWidget {
                                 fontSize: 18,
                                 fontWeight: FontWeight.w700,
                                 letterSpacing: -0.3,
-                                fontFamily: 'Pretendard',
+                                fontFamily: GoogleFonts.notoSansKr().fontFamily,
                               ),
                             ),
                             sortedAsync.maybeWhen(
@@ -109,7 +110,7 @@ class _SheetContent extends ConsumerWidget {
                                   color: _kNavy.withOpacity(0.4),
                                   fontSize: 13,
                                   fontWeight: FontWeight.w400,
-                                  fontFamily: 'Pretendard',
+                                  fontFamily: GoogleFonts.notoSansKr().fontFamily,
                                 ),
                               ),
                               orElse: () => const SizedBox.shrink(),
@@ -190,7 +191,7 @@ class _SheetContent extends ConsumerWidget {
                     style: TextStyle(
                       color: _kNavy.withOpacity(0.5),
                       fontSize: 14,
-                      fontFamily: 'Pretendard',
+                      fontFamily: GoogleFonts.notoSansKr().fontFamily,
                     ),
                   ),
                 ),
@@ -222,22 +223,22 @@ class _SortOptions extends ConsumerWidget {
           _SortChip(
             label: '거리순',
             isSelected: currentSort == CafeSortOrder.distance,
-            onTap: () => ref.read(cafeSortOrderProvider.notifier).state =
-                CafeSortOrder.distance,
+            onTap: () => ref.read(cafeSortOrderProvider.notifier).set(
+                CafeSortOrder.distance),
           ),
           const SizedBox(width: 8),
           _SortChip(
             label: '조용한순',
             isSelected: currentSort == CafeSortOrder.quiet,
-            onTap: () => ref.read(cafeSortOrderProvider.notifier).state =
-                CafeSortOrder.quiet,
+            onTap: () => ref.read(cafeSortOrderProvider.notifier).set(
+                CafeSortOrder.quiet),
           ),
           const SizedBox(width: 8),
           _SortChip(
             label: '인기순',
             isSelected: currentSort == CafeSortOrder.popular,
-            onTap: () => ref.read(cafeSortOrderProvider.notifier).state =
-                CafeSortOrder.popular,
+            onTap: () => ref.read(cafeSortOrderProvider.notifier).set(
+                CafeSortOrder.popular),
           ),
         ],
       ),
@@ -277,7 +278,7 @@ class _SortChip extends StatelessWidget {
             color: isSelected ? Colors.white : _kNavy.withOpacity(0.6),
             fontSize: 13,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-            fontFamily: 'Pretendard',
+            fontFamily: GoogleFonts.notoSansKr().fontFamily,
           ),
         ),
       ),

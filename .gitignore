@@ -5,6 +5,8 @@ build/
 *.iml
 .idea/
 .vscode/
+.flutter-plugins
+.flutter-plugins-dependencies
 
 # Firebase
 functions/node_modules/
@@ -15,3 +17,17 @@ functions/node_modules/
 
 # Env
 .env
+local.properties
+
+# Android
+key.properties
+*.keystore
+*.jks
+android/.gradle/
+*.class
+
+# iOS
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec

@@ -1,3 +1,4 @@
+import 'package:google_fonts/google_fonts.dart';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -149,7 +150,7 @@ class _DecibelGaugeState extends State<DecibelGauge>
                           color: color,
                           fontSize: 52,
                           fontWeight: FontWeight.w700,
-                          fontFamily: 'Pretendard',
+                          fontFamily: GoogleFonts.notoSansKr().fontFamily,
                           letterSpacing: -2,
                         ),
                       ),
@@ -160,7 +161,7 @@ class _DecibelGaugeState extends State<DecibelGauge>
                         color: _kNavy.withOpacity(0.4),
                         fontSize: 16,
                         fontWeight: FontWeight.w400,
-                        fontFamily: 'Pretendard',
+                        fontFamily: GoogleFonts.notoSansKr().fontFamily,
                       ),
                     ),
                     const SizedBox(height: 6),
@@ -178,7 +179,7 @@ class _DecibelGaugeState extends State<DecibelGauge>
                           color: color,
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
-                          fontFamily: 'Pretendard',
+                          fontFamily: GoogleFonts.notoSansKr().fontFamily,
                         ),
                       ),
                     ),

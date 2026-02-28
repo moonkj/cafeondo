@@ -56,37 +56,38 @@ class ProductInfo {
 }
 
 // ---------------------------------------------------------------------------
-// PremiumViewModelNotifier
+// PremiumViewModelNotifier (Riverpod 3.0 Notifier 패턴)
 // ---------------------------------------------------------------------------
 
-class PremiumViewModelNotifier extends StateNotifier<PremiumViewModel> {
-  final PurchaseService _purchaseService;
-  final Ref _ref;
-
-  PremiumViewModelNotifier(this._purchaseService, this._ref)
-      : super(PremiumViewModel(
-          products: const [],
-          selectedPlan: PlanType.yearly, // 기본 선택: 연간 (더 유리)
-          isPurchasing: false,
-          premiumStatus: PremiumStatus.free(),
-        )) {
+class PremiumViewModelNotifier extends Notifier<PremiumViewModel> {
+  @override
+  PremiumViewModel build() {
     _init();
+    return PremiumViewModel(
+      products: const [],
+      selectedPlan: PlanType.yearly, // 기본 선택: 연간 (더 유리)
+      isPurchasing: false,
+      premiumStatus: PremiumStatus.free(),
+    );
   }
+
+  PurchaseService get _purchaseService => ref.read(purchaseServiceProvider);
 
   Future<void> _init() async {
     // 상품 목록 로드
     await _loadProducts();
+    if (!ref.mounted) return;
 
     // 현재 프리미엄 상태 반영
-    final currentStatus =
-        _ref.read(premiumStatusNotifierProvider);
+    final currentStatus = ref.read(premiumStatusNotifierProvider);
     state = state.copyWith(premiumStatus: currentStatus);
 
     // 구매 결과 콜백 등록
     _purchaseService.onPremiumStatusChanged = (status) {
+      if (!ref.mounted) return;
       state = state.copyWith(premiumStatus: status, isPurchasing: false);
       // 전역 프리미엄 상태 업데이트
-      _ref.read(premiumStatusNotifierProvider.notifier).update(status);
+      ref.read(premiumStatusNotifierProvider.notifier).update(status);
     };
   }
 
@@ -147,7 +148,7 @@ class PremiumViewModelNotifier extends StateNotifier<PremiumViewModel> {
     await _purchaseService.restorePurchases();
     // 복원 결과는 콜백에서 처리. 결과가 없을 경우 상태 복구.
     await Future.delayed(const Duration(seconds: 3));
-    if (mounted && state.isPurchasing) {
+    if (ref.mounted && state.isPurchasing) {
       state = state.copyWith(isPurchasing: false);
     }
   }
@@ -159,7 +160,6 @@ class PremiumViewModelNotifier extends StateNotifier<PremiumViewModel> {
 
 /// [PremiumViewModelNotifier] 프로바이더.
 final premiumViewModelProvider =
-    StateNotifierProvider<PremiumViewModelNotifier, PremiumViewModel>((ref) {
-  final purchaseService = ref.watch(purchaseServiceProvider);
-  return PremiumViewModelNotifier(purchaseService, ref);
-});
+    NotifierProvider<PremiumViewModelNotifier, PremiumViewModel>(
+  PremiumViewModelNotifier.new,
+);

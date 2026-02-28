@@ -45,11 +45,48 @@ Stream<double> _mockDecibelStream() async* {
 }
 
 // ---------------------------------------------------------------------------
+// Simple boolean notifier for isMeasuring
+// ---------------------------------------------------------------------------
+
+class _BoolNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  // ignore: use_setters_to_change_properties
+  void set(bool value) => state = value;
+}
+
+// ---------------------------------------------------------------------------
+// Simple nullable result notifier
+// ---------------------------------------------------------------------------
+
+class _ResultNotifier extends Notifier<MeasurementResult?> {
+  @override
+  MeasurementResult? build() => null;
+
+  // ignore: use_setters_to_change_properties
+  void set(MeasurementResult? value) => state = value;
+}
+
+// ---------------------------------------------------------------------------
+// Simple duration notifier
+// ---------------------------------------------------------------------------
+
+class _DurationNotifier extends Notifier<Duration> {
+  @override
+  Duration build() => Duration.zero;
+
+  // ignore: use_setters_to_change_properties
+  void set(Duration value) => state = value;
+}
+
+// ---------------------------------------------------------------------------
 // Providers
 // ---------------------------------------------------------------------------
 
 /// Whether measurement is currently active
-final isMeasuringProvider = StateProvider<bool>((ref) => false);
+final isMeasuringProvider =
+    NotifierProvider<_BoolNotifier, bool>(_BoolNotifier.new);
 
 /// Current dB level from the microphone (mock stream)
 final currentDecibelProvider = StreamProvider<double>((ref) {
@@ -61,12 +98,14 @@ final currentDecibelProvider = StreamProvider<double>((ref) {
 });
 
 /// Stores the result of the last completed measurement
-final measurementResultProvider = StateProvider<MeasurementResult?>((ref) => null);
+final measurementResultProvider =
+    NotifierProvider<_ResultNotifier, MeasurementResult?>(
+  _ResultNotifier.new,
+);
 
 /// Elapsed duration since measurement started
-final measurementDurationProvider = StateProvider<Duration>(
-  (ref) => Duration.zero,
-);
+final measurementDurationProvider =
+    NotifierProvider<_DurationNotifier, Duration>(_DurationNotifier.new);
 
 /// Notifier that manages the full measurement lifecycle:
 /// start → stream dB → stop → produce result
@@ -86,13 +125,13 @@ class MeasurementNotifier extends Notifier<MeasurementResult?> {
   }) {
     _readings.clear();
     _elapsed = Duration.zero;
-    ref.read(measurementDurationProvider.notifier).state = Duration.zero;
-    ref.read(isMeasuringProvider.notifier).state = true;
+    ref.read(measurementDurationProvider.notifier).set(Duration.zero);
+    ref.read(isMeasuringProvider.notifier).set(true);
 
     // Duration ticker
     _durationTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       _elapsed += const Duration(seconds: 1);
-      ref.read(measurementDurationProvider.notifier).state = _elapsed;
+      ref.read(measurementDurationProvider.notifier).set(_elapsed);
     });
 
     // Subscribe to dB stream
@@ -110,7 +149,7 @@ class MeasurementNotifier extends Notifier<MeasurementResult?> {
     _durationTimer?.cancel();
     _measurementTimer?.cancel();
     _dbSubscription?.cancel();
-    ref.read(isMeasuringProvider.notifier).state = false;
+    ref.read(isMeasuringProvider.notifier).set(false);
 
     if (_readings.isEmpty) return;
 
@@ -128,14 +167,14 @@ class MeasurementNotifier extends Notifier<MeasurementResult?> {
     );
 
     state = result;
-    ref.read(measurementResultProvider.notifier).state = result;
+    ref.read(measurementResultProvider.notifier).set(result);
   }
 
   void reset() {
     _readings.clear();
     _elapsed = Duration.zero;
-    ref.read(measurementDurationProvider.notifier).state = Duration.zero;
-    ref.read(measurementResultProvider.notifier).state = null;
+    ref.read(measurementDurationProvider.notifier).set(Duration.zero);
+    ref.read(measurementResultProvider.notifier).set(null);
     state = null;
   }
 }

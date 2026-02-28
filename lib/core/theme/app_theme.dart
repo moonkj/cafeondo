@@ -9,8 +9,7 @@ import '../constants/app_dimensions.dart';
 abstract class AppTheme {
   AppTheme._();
 
-  /// Pretendard 폰트 (한글 최적화 산세리프)
-  /// google_fonts 패키지를 통해 접근. 없으면 Noto Sans KR fallback.
+  /// Noto Sans KR 폰트 (한글 최적화 산세리프, google_fonts 패키지 제공)
   static TextTheme _buildTextTheme(TextTheme base) {
     final pretendard = GoogleFonts.notoSansKr;
     return base.copyWith(

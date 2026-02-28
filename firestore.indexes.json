@@ -17,20 +17,6 @@
       ]
     },
     {
-      "collectionGroup": "cafes",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "totalMeasurements", "order": "DESCENDING" }
-      ]
-    },
-    {
-      "collectionGroup": "cafes",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "averageNoiseLevel", "order": "ASCENDING" }
-      ]
-    },
-    {
       "collectionGroup": "measurements",
       "queryScope": "COLLECTION",
       "fields": [
@@ -50,22 +36,8 @@
       "collectionGroup": "measurements",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "timestamp", "order": "DESCENDING" }
-      ]
-    },
-    {
-      "collectionGroup": "measurements",
-      "queryScope": "COLLECTION",
-      "fields": [
         { "fieldPath": "cafeId", "order": "ASCENDING" },
         { "fieldPath": "decibelLevel", "order": "ASCENDING" }
-      ]
-    },
-    {
-      "collectionGroup": "users",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "totalMeasurements", "order": "DESCENDING" }
       ]
     },
     {

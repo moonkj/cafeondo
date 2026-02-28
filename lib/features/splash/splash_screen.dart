@@ -1,3 +1,4 @@
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -114,7 +115,7 @@ class _SplashScreenState extends State<SplashScreen>
                       fontSize: 36,
                       fontWeight: FontWeight.w700,
                       letterSpacing: -0.5,
-                      fontFamily: 'Pretendard',
+                      fontFamily: GoogleFonts.notoSansKr().fontFamily,
                     ),
                   ),
                 ],
@@ -139,7 +140,7 @@ class _SplashScreenState extends State<SplashScreen>
                   fontSize: 15,
                   fontWeight: FontWeight.w400,
                   letterSpacing: -0.2,
-                  fontFamily: 'Pretendard',
+                  fontFamily: GoogleFonts.notoSansKr().fontFamily,
                 ),
               ),
             ),

@@ -113,43 +113,43 @@ final _mockMeasurements = [
   ),
 ];
 
-final _mockBadges = [
-  const UserBadge(
+final _mockBadges = const [
+  UserBadge(
     id: 'b_001',
     name: '첫 측정',
     description: '처음으로 소음을 측정했어요',
     emoji: '🎤',
     isEarned: true,
   ),
-  const UserBadge(
+  UserBadge(
     id: 'b_002',
     name: '조용한 발견자',
     description: '조용한 카페 3곳을 측정했어요',
     emoji: '🔇',
     isEarned: true,
   ),
-  const UserBadge(
+  UserBadge(
     id: 'b_003',
     name: '측정 5회',
     description: '총 5회 소음을 측정했어요',
     emoji: '⭐',
     isEarned: true,
   ),
-  const UserBadge(
+  UserBadge(
     id: 'b_004',
     name: '카페 탐험가',
     description: '서로 다른 카페 5곳을 측정했어요',
     emoji: '🗺️',
     isEarned: false,
   ),
-  const UserBadge(
+  UserBadge(
     id: 'b_005',
     name: '소음 감지사',
     description: '총 10회 소음을 측정했어요',
     emoji: '🎧',
     isEarned: false,
   ),
-  const UserBadge(
+  UserBadge(
     id: 'b_006',
     name: '지역 전문가',
     description: '같은 지역에서 10회 측정했어요',
@@ -160,14 +160,17 @@ final _mockBadges = [
 
 // ── Profile ViewModel ─────────────────────────────────────────────────────────
 
-class ProfileViewModel extends StateNotifier<ProfileState> {
-  ProfileViewModel() : super(const ProfileState()) {
+class ProfileViewModel extends Notifier<ProfileState> {
+  @override
+  ProfileState build() {
     _loadProfile();
+    return const ProfileState(isLoading: true);
   }
 
   Future<void> _loadProfile() async {
     state = state.copyWith(isLoading: true);
     await Future.delayed(const Duration(milliseconds: 500));
+    if (!ref.mounted) return;
 
     // 목 유저 프로필 (실제 구현에서는 FirebaseAuth + Firestore 연동)
     final mockProfile = UserProfile(
@@ -201,8 +204,8 @@ class ProfileViewModel extends StateNotifier<ProfileState> {
 // ── Providers ─────────────────────────────────────────────────────────────────
 
 final profileProvider =
-    StateNotifierProvider<ProfileViewModel, ProfileState>(
-  (ref) => ProfileViewModel(),
+    NotifierProvider<ProfileViewModel, ProfileState>(
+  ProfileViewModel.new,
 );
 
 /// 등록 카페 수 (mock)

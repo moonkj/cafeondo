@@ -1,3 +1,4 @@
+import 'package:google_fonts/google_fonts.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
@@ -98,7 +99,7 @@ class _AtmosphereChartState extends State<AtmosphereChart>
                   color: Colors.white,
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  fontFamily: 'Pretendard',
+                  fontFamily: GoogleFonts.notoSansKr().fontFamily,
                 ),
               );
             }).toList();
@@ -130,7 +131,7 @@ class _AtmosphereChartState extends State<AtmosphereChart>
                   color: _kNavy.withOpacity(0.35),
                   fontSize: 10,
                   fontWeight: FontWeight.w400,
-                  fontFamily: 'Pretendard',
+                  fontFamily: GoogleFonts.notoSansKr().fontFamily,
                 ),
               );
             },
@@ -158,7 +159,7 @@ class _AtmosphereChartState extends State<AtmosphereChart>
                     color: _kNavy.withOpacity(0.4),
                     fontSize: 10,
                     fontWeight: FontWeight.w400,
-                    fontFamily: 'Pretendard',
+                    fontFamily: GoogleFonts.notoSansKr().fontFamily,
                   ),
                 ),
               );

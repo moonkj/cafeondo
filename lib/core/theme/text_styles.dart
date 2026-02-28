@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../constants/app_colors.dart';
 
 /// 카페온도 타이포그래피 스타일 정의
-/// Pretendard(Noto Sans KR) 폰트 기반
+/// Noto Sans KR 폰트 기반 (google_fonts 패키지)
 abstract class AppTextStyles {
   AppTextStyles._();
 

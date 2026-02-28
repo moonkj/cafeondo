@@ -488,7 +488,7 @@ class _PricingCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    _isYearly ? '₩13,000' : '₩1,300',
+                    _isYearly ? '$9.99' : '$0.99',
                     style: TextStyle(
                       fontSize: 18.0,
                       fontWeight: FontWeight.w800,
@@ -576,8 +576,8 @@ class _SubscribeButton extends StatelessWidget {
               )
             : Text(
                 vm.selectedPlan == PlanType.yearly
-                    ? '연간 구독하기 — ₩13,000/년'
-                    : '월간 구독하기 — ₩1,300/월',
+                    ? '연간 구독하기 — $9.99/년'
+                    : '월간 구독하기 — $0.99/월',
                 style: const TextStyle(
                   fontSize: 15.0,
                   fontWeight: FontWeight.w700,
@@ -603,6 +603,7 @@ class _TermsNote extends StatelessWidget {
           Text(
             '구독은 현재 기기에서 확인 후 자동으로 갱신됩니다.\n'
             '갱신일 24시간 전에 취소하지 않으면 자동으로 결제됩니다.\n'
+            '월간 구독: $0.99 / 연간 구독: $9.99\n'
             'App Store / Google Play 계정 설정에서 언제든지 구독을 관리하거나 취소할 수 있습니다.',
             textAlign: TextAlign.center,
             style: TextStyle(

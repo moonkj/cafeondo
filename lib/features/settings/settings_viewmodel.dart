@@ -63,14 +63,17 @@ class SettingsState {
 
 // ── Settings ViewModel ────────────────────────────────────────────────────────
 
-class SettingsViewModel extends StateNotifier<SettingsState> {
-  SettingsViewModel() : super(const SettingsState()) {
+class SettingsViewModel extends Notifier<SettingsState> {
+  @override
+  SettingsState build() {
     _loadPreferences();
+    return const SettingsState();
   }
 
   Future<void> _loadPreferences() async {
     try {
       final prefs = await SharedPreferences.getInstance();
+      if (!ref.mounted) return;
       state = state.copyWith(
         notifications: NotificationSettings(
           measurementAlert: prefs.getBool(_kNotifMeasurementKey) ?? true,
@@ -110,6 +113,7 @@ class SettingsViewModel extends StateNotifier<SettingsState> {
   Future<void> signOut() async {
     state = state.copyWith(isLoading: true);
     await Future.delayed(const Duration(milliseconds: 300));
+    if (!ref.mounted) return;
     // 실제 구현: FirebaseAuth.instance.signOut()
     state = state.copyWith(isLoading: false);
   }
@@ -117,6 +121,7 @@ class SettingsViewModel extends StateNotifier<SettingsState> {
   Future<void> deleteAccount() async {
     state = state.copyWith(isLoading: true);
     await Future.delayed(const Duration(milliseconds: 500));
+    if (!ref.mounted) return;
     // 실제 구현: Firebase Auth user.delete()
     state = state.copyWith(isLoading: false);
   }
@@ -125,6 +130,6 @@ class SettingsViewModel extends StateNotifier<SettingsState> {
 // ── Providers ─────────────────────────────────────────────────────────────────
 
 final settingsProvider =
-    StateNotifierProvider<SettingsViewModel, SettingsState>(
-  (ref) => SettingsViewModel(),
+    NotifierProvider<SettingsViewModel, SettingsState>(
+  SettingsViewModel.new,
 );

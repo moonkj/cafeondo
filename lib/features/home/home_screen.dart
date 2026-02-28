@@ -1,3 +1,4 @@
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -15,7 +16,6 @@ const Color _kLightTeal = Color(0xFFD6F5FA);
 const Color _kOffWhite = Color(0xFFFCFAF6);
 const Color _kPaperWhite = Color(0xFFF3F3EE);
 const Color _kWarmBeige = Color(0xFFE5E3D4);
-const Color _kTerra = Color(0xFFA84B2F);
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -25,7 +25,6 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  int _selectedIndex = 0;
   final DraggableScrollableController _sheetController =
       DraggableScrollableController();
 
@@ -33,22 +32,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void dispose() {
     _sheetController.dispose();
     super.dispose();
-  }
-
-  void _onNavItemTapped(int index) {
-    if (index == 1) {
-      context.push('/measure');
-      return;
-    }
-    if (index == 2) {
-      context.push('/ranking');
-      return;
-    }
-    if (index == 3) {
-      context.push('/profile');
-      return;
-    }
-    setState(() => _selectedIndex = index);
   }
 
   @override
@@ -74,13 +57,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ],
       ),
 
-      // Bottom navigation bar
-      bottomNavigationBar: _BottomNavBar(
-        selectedIndex: _selectedIndex,
-        onTap: _onNavItemTapped,
-      ),
-
-      // FAB for quick measurement
+      // FAB for quick measurement — centered above the shell's nav bar
       floatingActionButton: _MeasureFab(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
@@ -124,7 +101,7 @@ class _SearchBar extends StatelessWidget {
                   color: _kNavy.withOpacity(0.35),
                   fontSize: 15,
                   fontWeight: FontWeight.w400,
-                  fontFamily: 'Pretendard',
+                  fontFamily: GoogleFonts.notoSansKr().fontFamily,
                 ),
               ),
             ),
@@ -140,7 +117,7 @@ class _SearchBar extends StatelessWidget {
                   color: _kDeepTeal,
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  fontFamily: 'Pretendard',
+                  fontFamily: GoogleFonts.notoSansKr().fontFamily,
                 ),
               ),
             ),
@@ -159,7 +136,7 @@ class _MeasureFab extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return GestureDetector(
-      onTap: () => context.push('/measure'),
+      onTap: () => context.go('/measure'),
       child: Container(
         width: 60,
         height: 60,
@@ -189,7 +166,7 @@ class _MeasureFab extends ConsumerWidget {
                 color: Colors.white,
                 fontSize: 9,
                 fontWeight: FontWeight.w600,
-                fontFamily: 'Pretendard',
+                fontFamily: GoogleFonts.notoSansKr().fontFamily,
               ),
             ),
           ],
@@ -197,104 +174,4 @@ class _MeasureFab extends ConsumerWidget {
       ),
     );
   }
-}
-
-// ---------------------------------------------------------------------------
-// Bottom Navigation Bar
-// ---------------------------------------------------------------------------
-
-class _BottomNavBar extends StatelessWidget {
-  final int selectedIndex;
-  final ValueChanged<int> onTap;
-
-  const _BottomNavBar({
-    required this.selectedIndex,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final items = <_NavItem>[
-      const _NavItem(icon: Icons.map_outlined, activeIcon: Icons.map, label: '홈'),
-      const _NavItem(
-        icon: Icons.graphic_eq_outlined,
-        activeIcon: Icons.graphic_eq,
-        label: '측정',
-      ),
-      const _NavItem(
-        icon: Icons.emoji_events_outlined,
-        activeIcon: Icons.emoji_events,
-        label: '랭킹',
-      ),
-      const _NavItem(
-        icon: Icons.person_outline_rounded,
-        activeIcon: Icons.person_rounded,
-        label: '프로필',
-      ),
-    ];
-
-    return Container(
-      height: 64 + MediaQuery.of(context).padding.bottom,
-      decoration: BoxDecoration(
-        color: _kOffWhite,
-        border: Border(top: BorderSide(color: _kWarmBeige, width: 1.0)),
-      ),
-      child: Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
-        child: Row(
-          children: List.generate(items.length, (i) {
-            final item = items[i];
-            final isSelected = i == selectedIndex;
-            return Expanded(
-              child: _buildNavItem(item, isSelected, i),
-            );
-          }),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNavItem(_NavItem item, bool isSelected, int index) {
-    return GestureDetector(
-      onTap: () => onTap(index),
-      behavior: HitTestBehavior.opaque,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              isSelected ? item.activeIcon : item.icon,
-              color: isSelected ? _kDeepTeal : _kNavy.withOpacity(0.35),
-              size: 24,
-            ),
-            const SizedBox(height: 3),
-            Text(
-              item.label,
-              style: TextStyle(
-                color: isSelected ? _kDeepTeal : _kNavy.withOpacity(0.35),
-                fontSize: 11,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                fontFamily: 'Pretendard',
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _NavItem {
-  final IconData icon;
-  final IconData activeIcon;
-  final String label;
-
-  const _NavItem({
-    required this.icon,
-    required this.activeIcon,
-    required this.label,
-  });
 }

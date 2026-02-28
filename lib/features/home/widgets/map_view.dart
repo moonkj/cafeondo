@@ -1,3 +1,4 @@
+import 'package:google_fonts/google_fonts.dart';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -63,7 +64,7 @@ class _MapViewState extends ConsumerState<MapView> {
         position: cafe.location,
         icon: bitmap,
         onTap: () {
-          ref.read(selectedCafeProvider.notifier).state = cafe;
+          ref.read(selectedCafeProvider.notifier).set(cafe);
           context.push('/cafe/${cafe.id}');
         },
       );
@@ -305,7 +306,7 @@ class _LegendItem extends StatelessWidget {
             color: _kNavy.withOpacity(0.7),
             fontSize: 11,
             fontWeight: FontWeight.w500,
-            fontFamily: 'Pretendard',
+            fontFamily: GoogleFonts.notoSansKr().fontFamily,
           ),
         ),
       ],

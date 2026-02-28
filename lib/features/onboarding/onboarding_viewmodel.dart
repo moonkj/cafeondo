@@ -33,16 +33,11 @@ class OnboardingState {
 
 // ── Onboarding ViewModel ──────────────────────────────────────────────────────
 
-class OnboardingViewModel extends StateNotifier<OnboardingState> {
-  OnboardingViewModel() : super(const OnboardingState());
-
+class OnboardingViewModel extends Notifier<OnboardingState> {
   final PageController pageController = PageController();
 
   @override
-  void dispose() {
-    pageController.dispose();
-    super.dispose();
-  }
+  OnboardingState build() => const OnboardingState();
 
   void onPageChanged(int page) {
     state = state.copyWith(currentPage: page);
@@ -65,7 +60,9 @@ class OnboardingViewModel extends StateNotifier<OnboardingState> {
     } catch (_) {
       // 저장 실패해도 온보딩은 완료 처리
     } finally {
-      state = state.copyWith(isCompleting: false);
+      if (ref.mounted) {
+        state = state.copyWith(isCompleting: false);
+      }
     }
   }
 }
@@ -73,8 +70,8 @@ class OnboardingViewModel extends StateNotifier<OnboardingState> {
 // ── Providers ─────────────────────────────────────────────────────────────────
 
 final onboardingProvider =
-    StateNotifierProvider.autoDispose<OnboardingViewModel, OnboardingState>(
-  (ref) => OnboardingViewModel(),
+    NotifierProvider.autoDispose<OnboardingViewModel, OnboardingState>(
+  OnboardingViewModel.new,
 );
 
 /// 온보딩 완료 여부 확인 (앱 시작 시 사용)

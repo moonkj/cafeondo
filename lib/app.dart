@@ -80,7 +80,9 @@ final _router = GoRouter(
           name: 'measurement',
           pageBuilder: (context, state) => NoTransitionPage(
             key: state.pageKey,
-            child: const MeasurementScreen(),
+            child: MeasurementScreen(
+              cafeId: state.extra as String?,
+            ),
           ),
         ),
         GoRoute(

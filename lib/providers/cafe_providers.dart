@@ -298,7 +298,18 @@ final cafesProvider = FutureProvider<List<CafeModel>>((ref) async {
 });
 
 /// Currently selected cafe on the map
-final selectedCafeProvider = StateProvider<CafeModel?>((ref) => null);
+class _SelectedCafeNotifier extends Notifier<CafeModel?> {
+  @override
+  CafeModel? build() => null;
+
+  // ignore: use_setters_to_change_properties
+  void set(CafeModel? cafe) => state = cafe;
+}
+
+final selectedCafeProvider =
+    NotifierProvider<_SelectedCafeNotifier, CafeModel?>(
+  _SelectedCafeNotifier.new,
+);
 
 /// Cafe detail by ID
 final cafeDetailProvider =
@@ -314,8 +325,17 @@ final cafeDetailProvider =
 /// Sort order for cafe list
 enum CafeSortOrder { distance, quiet, popular }
 
-final cafeSortOrderProvider = StateProvider<CafeSortOrder>(
-  (ref) => CafeSortOrder.distance,
+class _SortOrderNotifier extends Notifier<CafeSortOrder> {
+  @override
+  CafeSortOrder build() => CafeSortOrder.distance;
+
+  // ignore: use_setters_to_change_properties
+  void set(CafeSortOrder order) => state = order;
+}
+
+final cafeSortOrderProvider =
+    NotifierProvider<_SortOrderNotifier, CafeSortOrder>(
+  _SortOrderNotifier.new,
 );
 
 /// Sorted cafe list

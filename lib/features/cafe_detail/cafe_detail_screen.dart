@@ -1,3 +1,4 @@
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -39,7 +40,7 @@ class CafeDetailScreen extends ConsumerWidget {
             body: const Center(
               child: Text(
                 '카페 정보를 찾을 수 없어요',
-                style: TextStyle(fontFamily: 'Pretendard'),
+                style: TextStyle(fontFamily: GoogleFonts.notoSansKr().fontFamily),
               ),
             ),
           );
@@ -65,7 +66,7 @@ class CafeDetailScreen extends ConsumerWidget {
         body: const Center(
           child: Text(
             '오류가 발생했어요',
-            style: TextStyle(fontFamily: 'Pretendard'),
+            style: TextStyle(fontFamily: GoogleFonts.notoSansKr().fontFamily),
           ),
         ),
       ),
@@ -118,7 +119,7 @@ class _CafeDetailContent extends StatelessWidget {
                               style: TextStyle(
                                 color: _kNavy.withOpacity(0.35),
                                 fontSize: 11,
-                                fontFamily: 'Pretendard',
+                                fontFamily: GoogleFonts.notoSansKr().fontFamily,
                               ),
                             ),
                             const Spacer(),
@@ -188,7 +189,7 @@ class _CafeDetailContent extends StatelessWidget {
           color: _kNavy.withOpacity(0.5),
           fontSize: 11,
           fontWeight: FontWeight.w500,
-          fontFamily: 'Pretendard',
+          fontFamily: GoogleFonts.notoSansKr().fontFamily,
         ),
       ),
     );
@@ -227,7 +228,7 @@ class _CafeSliverAppBar extends StatelessWidget {
             color: _kNavy,
             fontSize: 16,
             fontWeight: FontWeight.w700,
-            fontFamily: 'Pretendard',
+            fontFamily: GoogleFonts.notoSansKr().fontFamily,
             letterSpacing: -0.2,
           ),
         ),
@@ -275,7 +276,7 @@ class _CafeHeroImage extends StatelessWidget {
                       fontSize: 80,
                       color: _kDeepTeal.withOpacity(0.3),
                       fontWeight: FontWeight.w700,
-                      fontFamily: 'Pretendard',
+                      fontFamily: GoogleFonts.notoSansKr().fontFamily,
                     ),
                   ),
                 ),
@@ -366,7 +367,7 @@ class _CafeHeader extends StatelessWidget {
             fontSize: 24,
             fontWeight: FontWeight.w700,
             letterSpacing: -0.5,
-            fontFamily: 'Pretendard',
+            fontFamily: GoogleFonts.notoSansKr().fontFamily,
           ),
         ),
         const SizedBox(height: 6),
@@ -383,7 +384,7 @@ class _CafeHeader extends StatelessWidget {
                   color: _kNavy.withOpacity(0.5),
                   fontSize: 13,
                   fontWeight: FontWeight.w400,
-                  fontFamily: 'Pretendard',
+                  fontFamily: GoogleFonts.notoSansKr().fontFamily,
                 ),
               ),
             ),
@@ -417,7 +418,7 @@ class _CafeHeader extends StatelessWidget {
                       color: _noiseTextColor(cafe.noiseLevel),
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
-                      fontFamily: 'Pretendard',
+                      fontFamily: GoogleFonts.notoSansKr().fontFamily,
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -427,7 +428,7 @@ class _CafeHeader extends StatelessWidget {
                       color: _noiseTextColor(cafe.noiseLevel).withOpacity(0.7),
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
-                      fontFamily: 'Pretendard',
+                      fontFamily: GoogleFonts.notoSansKr().fontFamily,
                     ),
                   ),
                 ],
@@ -440,7 +441,7 @@ class _CafeHeader extends StatelessWidget {
                 color: _kNavy.withOpacity(0.4),
                 fontSize: 12,
                 fontWeight: FontWeight.w400,
-                fontFamily: 'Pretendard',
+                fontFamily: GoogleFonts.notoSansKr().fontFamily,
               ),
             ),
           ],
@@ -512,7 +513,7 @@ class _SectionCard extends StatelessWidget {
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
                   letterSpacing: -0.2,
-                  fontFamily: 'Pretendard',
+                  fontFamily: GoogleFonts.notoSansKr().fontFamily,
                 ),
               ),
               if (subtitle != null) ...[
@@ -523,7 +524,7 @@ class _SectionCard extends StatelessWidget {
                     color: _kNavy.withOpacity(0.4),
                     fontSize: 12,
                     fontWeight: FontWeight.w400,
-                    fontFamily: 'Pretendard',
+                    fontFamily: GoogleFonts.notoSansKr().fontFamily,
                   ),
                 ),
               ],
@@ -578,7 +579,7 @@ class _AtmosphereChip extends StatelessWidget {
           color: _kNavy.withOpacity(0.65),
           fontSize: 13,
           fontWeight: FontWeight.w500,
-          fontFamily: 'Pretendard',
+          fontFamily: GoogleFonts.notoSansKr().fontFamily,
         ),
       ),
     );
@@ -605,7 +606,7 @@ class _RecentMeasurementsList extends StatelessWidget {
             style: TextStyle(
               color: _kNavy.withOpacity(0.4),
               fontSize: 14,
-              fontFamily: 'Pretendard',
+              fontFamily: GoogleFonts.notoSansKr().fontFamily,
             ),
           ),
         ),
@@ -658,7 +659,7 @@ class _MeasurementItem extends StatelessWidget {
                 color: _kDeepTeal,
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
-                fontFamily: 'Pretendard',
+                fontFamily: GoogleFonts.notoSansKr().fontFamily,
               ),
             ),
           ),
@@ -678,7 +679,7 @@ class _MeasurementItem extends StatelessWidget {
                       color: _kNavy,
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      fontFamily: 'Pretendard',
+                      fontFamily: GoogleFonts.notoSansKr().fontFamily,
                     ),
                   ),
                   const Spacer(),
@@ -687,7 +688,7 @@ class _MeasurementItem extends StatelessWidget {
                     style: TextStyle(
                       color: _kNavy.withOpacity(0.35),
                       fontSize: 11,
-                      fontFamily: 'Pretendard',
+                      fontFamily: GoogleFonts.notoSansKr().fontFamily,
                     ),
                   ),
                 ],
@@ -702,7 +703,7 @@ class _MeasurementItem extends StatelessWidget {
                     style: TextStyle(
                       color: _kNavy.withOpacity(0.5),
                       fontSize: 12,
-                      fontFamily: 'Pretendard',
+                      fontFamily: GoogleFonts.notoSansKr().fontFamily,
                     ),
                   ),
                 ],
@@ -714,7 +715,7 @@ class _MeasurementItem extends StatelessWidget {
                   style: TextStyle(
                     color: _kNavy.withOpacity(0.6),
                     fontSize: 13,
-                    fontFamily: 'Pretendard',
+                    fontFamily: GoogleFonts.notoSansKr().fontFamily,
                     height: 1.4,
                   ),
                 ),
@@ -764,7 +765,7 @@ class _SmallNoiseBadge extends StatelessWidget {
           color: _fg,
           fontSize: 11,
           fontWeight: FontWeight.w600,
-          fontFamily: 'Pretendard',
+          fontFamily: GoogleFonts.notoSansKr().fontFamily,
         ),
       ),
     );
@@ -811,7 +812,7 @@ class _MeasureCTAButton extends StatelessWidget {
                   color: Colors.white,
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
-                  fontFamily: 'Pretendard',
+                  fontFamily: GoogleFonts.notoSansKr().fontFamily,
                   letterSpacing: -0.2,
                 ),
               ),

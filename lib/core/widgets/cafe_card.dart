@@ -1,3 +1,4 @@
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -60,7 +61,7 @@ class CafeCard extends StatelessWidget {
                             fontSize: 15,
                             fontWeight: FontWeight.w700,
                             letterSpacing: -0.2,
-                            fontFamily: 'Pretendard',
+                            fontFamily: GoogleFonts.notoSansKr().fontFamily,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -73,7 +74,7 @@ class CafeCard extends StatelessWidget {
                           color: _kNavy.withOpacity(0.4),
                           fontSize: 12,
                           fontWeight: FontWeight.w400,
-                          fontFamily: 'Pretendard',
+                          fontFamily: GoogleFonts.notoSansKr().fontFamily,
                         ),
                       ),
                     ],
@@ -88,7 +89,7 @@ class CafeCard extends StatelessWidget {
                       color: _kNavy.withOpacity(0.45),
                       fontSize: 12,
                       fontWeight: FontWeight.w400,
-                      fontFamily: 'Pretendard',
+                      fontFamily: GoogleFonts.notoSansKr().fontFamily,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -116,7 +117,7 @@ class CafeCard extends StatelessWidget {
                           color: _kNavy.withOpacity(0.35),
                           fontSize: 11,
                           fontWeight: FontWeight.w400,
-                          fontFamily: 'Pretendard',
+                          fontFamily: GoogleFonts.notoSansKr().fontFamily,
                         ),
                       ),
                     ],
@@ -228,7 +229,7 @@ class _Placeholder extends StatelessWidget {
             color: _textColor,
             fontSize: 28,
             fontWeight: FontWeight.w700,
-            fontFamily: 'Pretendard',
+            fontFamily: GoogleFonts.notoSansKr().fontFamily,
           ),
         ),
       ),
@@ -300,7 +301,7 @@ class _NoiseBadge extends StatelessWidget {
               color: _textColor,
               fontSize: 11,
               fontWeight: FontWeight.w600,
-              fontFamily: 'Pretendard',
+              fontFamily: GoogleFonts.notoSansKr().fontFamily,
             ),
           ),
         ],

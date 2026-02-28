@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:noise_meter/noise_meter.dart';
+
 import '../models/cafe.dart';
 
 // ---------------------------------------------------------------------------
@@ -198,5 +200,119 @@ class MockNoiseService implements NoiseService {
     final result = service.stopMeasurement();
     service.dispose();
     return result?.averageDecibels ?? 50.0;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 실제 마이크 구현 (noise_meter 패키지 기반)
+// ---------------------------------------------------------------------------
+
+/// 실제 마이크 소음 서비스
+///
+/// [noise_meter](https://pub.dev/packages/noise_meter) 패키지를 사용해
+/// 기기 마이크에서 실시간 dB 값을 측정합니다.
+///
+/// ## 플랫폼 설정
+///
+/// ### Android
+/// `android/app/src/main/AndroidManifest.xml`에 추가:
+/// ```xml
+/// <uses-permission android:name="android.permission.RECORD_AUDIO" />
+/// ```
+///
+/// ### iOS
+/// `ios/Runner/Info.plist`에 추가:
+/// ```xml
+/// <key>NSMicrophoneUsageDescription</key>
+/// <string>소음 측정을 위해 마이크 접근이 필요합니다.</string>
+/// ```
+/// Xcode > Capabilities > Background Modes > Audio, AirPlay and Picture in Picture 활성화
+///
+/// ## 권한 요청
+/// 이 서비스를 사용하기 전에 반드시 마이크 권한을 요청하세요.
+/// `permission_handler` 패키지 또는 직접 권한 요청을 사용할 수 있습니다.
+class MicNoiseService implements NoiseService {
+  final StreamController<double> _controller =
+      StreamController<double>.broadcast();
+
+  StreamSubscription<NoiseReading>? _noiseSubscription;
+  NoiseMeter? _noiseMeter;
+
+  final List<double> _samples = [];
+  DateTime? _startTime;
+  bool _measuring = false;
+
+  @override
+  bool get isMeasuring => _measuring;
+
+  @override
+  int get sampleCount => _samples.length;
+
+  @override
+  Stream<double> get decibelStream => _controller.stream;
+
+  @override
+  void startMeasurement() {
+    if (_measuring) return;
+
+    _measuring = true;
+    _samples.clear();
+    _startTime = DateTime.now();
+
+    _noiseMeter = NoiseMeter();
+    _noiseSubscription = _noiseMeter!.noise.listen(
+      (NoiseReading reading) {
+        if (!_measuring) return;
+        final db = reading.meanDecibel;
+        _samples.add(db);
+        if (!_controller.isClosed) {
+          _controller.add(db);
+        }
+      },
+      onError: (Object error) {
+        // 권한 오류 또는 하드웨어 오류 시 스트림에 에러 전달
+        if (!_controller.isClosed) {
+          _controller.addError(error);
+        }
+        _measuring = false;
+      },
+      cancelOnError: true,
+    );
+  }
+
+  @override
+  NoiseMeasurementResult? stopMeasurement() {
+    if (!_measuring) return null;
+
+    _measuring = false;
+    _noiseSubscription?.cancel();
+    _noiseSubscription = null;
+    _noiseMeter = null;
+
+    if (_samples.isEmpty) return null;
+
+    final avg = _samples.reduce((a, b) => a + b) / _samples.length;
+    final peak = _samples.reduce(math.max);
+    final min = _samples.reduce(math.min);
+    final duration = _startTime != null
+        ? DateTime.now().difference(_startTime!)
+        : Duration.zero;
+
+    return NoiseMeasurementResult(
+      averageDecibels: avg,
+      peakDecibels: peak,
+      minDecibels: min,
+      noiseCategory: NoiseCategory.fromDecibels(avg),
+      sampleCount: _samples.length,
+      duration: duration,
+      completedAt: DateTime.now(),
+    );
+  }
+
+  @override
+  void dispose() {
+    _measuring = false;
+    _noiseSubscription?.cancel();
+    _controller.close();
   }
 }

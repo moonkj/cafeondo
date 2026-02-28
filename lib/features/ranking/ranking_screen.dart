@@ -31,8 +31,8 @@ class _RankingScreenState extends ConsumerState<RankingScreen>
     _tabController = TabController(length: _tabs.length, vsync: this);
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) return;
-      ref.read(rankingSelectedTabProvider.notifier).state =
-          _tabController.index;
+      ref.read(rankingSelectedTabProvider.notifier).set(
+          _tabController.index);
     });
   }
 

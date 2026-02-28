@@ -12,10 +12,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 abstract class PurchaseProductIds {
   PurchaseProductIds._();
 
-  /// 월간 구독 ID
+  /// 월간 구독 ID — $0.99/month
   static const String monthly = 'cafeondo_premium_monthly';
 
-  /// 연간 구독 ID
+  /// 연간 구독 ID — $9.99/year
   static const String yearly = 'cafeondo_premium_yearly';
 
   static const Set<String> all = {monthly, yearly};
@@ -108,6 +108,7 @@ abstract class _PrefKeys {
 /// 인앱 구매(구독) 서비스.
 ///
 /// - 상품 조회, 구매, 구매 복원 기능을 제공합니다.
+/// - 구독 가격: 월간 $0.99 / 연간 $9.99
 /// - 클라이언트 사이드 기본 검증 수행.
 ///   TODO: 서버 사이드 검증(Receipt Validation)을 추가하세요.
 /// - [PremiumStatus]는 [SharedPreferences]에 캐시됩니다.
@@ -176,7 +177,7 @@ class PurchaseService {
 
     final param = PurchaseParam(productDetails: product);
     try {
-      // 구독 상품은 buyNonConsumable 사용
+      // 구독 상품은 buyNonConsumable 사용 (iOS/Android 공통)
       final result = await _iap.buyNonConsumable(purchaseParam: param);
       return result;
     } catch (e) {
@@ -331,29 +332,30 @@ final purchaseServiceProvider = Provider<PurchaseService>((ref) {
   return service;
 });
 
-/// 현재 [PremiumStatus] 상태 프로바이더.
-///
-/// [PurchaseService]의 초기화 이후 업데이트됩니다.
+/// 현재 [PremiumStatus] 상태 프로바이더 (Riverpod 3.0 Notifier 패턴).
 final premiumStatusNotifierProvider =
-    StateNotifierProvider<PremiumStatusNotifier, PremiumStatus>((ref) {
-  return PremiumStatusNotifier(ref.watch(purchaseServiceProvider));
-});
+    NotifierProvider<PremiumStatusNotifier, PremiumStatus>(
+  PremiumStatusNotifier.new,
+);
 
-class PremiumStatusNotifier extends StateNotifier<PremiumStatus> {
-  final PurchaseService _service;
-
-  PremiumStatusNotifier(this._service) : super(PremiumStatus.free()) {
+class PremiumStatusNotifier extends Notifier<PremiumStatus> {
+  @override
+  PremiumStatus build() {
     _init();
+    return PremiumStatus.free();
   }
 
   Future<void> _init() async {
+    final service = ref.read(purchaseServiceProvider);
+
     // 캐시에서 프리미엄 상태 로드
-    final cached = await _service.loadPremiumStatus();
-    if (mounted) state = cached;
+    final cached = await service.loadPremiumStatus();
+    if (!ref.mounted) return;
+    state = cached;
 
     // 콜백 등록: 구매 완료 시 상태 업데이트
-    _service.onPremiumStatusChanged = (status) {
-      if (mounted) state = status;
+    service.onPremiumStatusChanged = (status) {
+      if (ref.mounted) state = status;
     };
   }
 

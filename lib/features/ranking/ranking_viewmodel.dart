@@ -208,7 +208,16 @@ final _mockActiveCafes = [
 
 // ── Selected Tab Provider ─────────────────────────────────────────────────────
 
-final rankingSelectedTabProvider = StateProvider<int>((ref) => 0);
+class _TabNotifier extends Notifier<int> {
+  @override
+  int build() => 0;
+
+  // ignore: use_setters_to_change_properties
+  void set(int index) => state = index;
+}
+
+final rankingSelectedTabProvider =
+    NotifierProvider<_TabNotifier, int>(_TabNotifier.new);
 
 // ── FutureProviders ───────────────────────────────────────────────────────────
 

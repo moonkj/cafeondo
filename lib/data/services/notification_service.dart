@@ -123,6 +123,10 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 /// 4. 포그라운드/백그라운드/종료 상태 핸들러 등록
 /// 5. 토픽 구독
 class NotificationService {
+  NotificationService._();
+
+  static final NotificationService instance = NotificationService._();
+
   final FirebaseMessaging _messaging = FirebaseMessaging.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
@@ -298,7 +302,7 @@ class NotificationService {
 
 /// [NotificationService] 프로바이더.
 final notificationServiceProvider = Provider<NotificationService>((ref) {
-  final service = NotificationService();
+  final service = NotificationService.instance;
   ref.onDispose(service.dispose);
   return service;
 });
