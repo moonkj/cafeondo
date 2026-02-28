@@ -46,7 +46,7 @@
 
 	<!-- Google Maps API Key -->
 	<key>GMSApiKey</key>
-	<string>여기에키입력</string>
+	<string>AIzaSyDvlYk7df6J7Kvhgy1bUB4hAIETSi4lC5w</string>
 
 	<!-- AdMob App ID -->
 	<key>GADApplicationIdentifier</key>
