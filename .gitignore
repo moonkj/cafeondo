@@ -1,0 +1,17 @@
+# Flutter
+.dart_tool/
+.packages
+build/
+*.iml
+.idea/
+.vscode/
+
+# Firebase
+functions/node_modules/
+
+# OS
+.DS_Store
+*.swp
+
+# Env
+.env

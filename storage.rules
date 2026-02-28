@@ -1,0 +1,127 @@
+rules_version = '2';
+
+// =============================================================================
+// CafeOndo (카페온도) — Firebase Storage Security Rules
+// =============================================================================
+//
+// Bucket structure:
+//   cafes/{cafeId}/{filename}   — Cafe photos uploaded by any authenticated user
+//   users/{userId}/{filename}   — User profile photos (private per-user folder)
+//
+// Constraints applied on every upload:
+//   • Maximum file size: 5 MB  (5 * 1024 * 1024 bytes)
+//   • Allowed MIME types: image/jpeg, image/png, image/webp
+//
+// Read access:
+//   • Cafe images  — any authenticated user (cafe photos are semi-public)
+//   • User images  — only the owning user (profile photos are private)
+//
+// Write access:
+//   • Cafe images  — any authenticated user (crowd-sourced photo uploads)
+//   • User images  — only the owning user (prevents overwriting others' avatars)
+//
+// Delete access:
+//   • Cafe images  — restricted to admin custom-claim (server-side moderation)
+//   • User images  — the owning user or admin
+// =============================================================================
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // =========================================================================
+    // Helper functions
+    // =========================================================================
+
+    /// Returns true when the request comes from a signed-in Firebase user.
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    /// Returns true when the signed-in user matches the given userId.
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    /// Returns true when the signed-in user carries the `admin: true` custom claim.
+    function isAdmin() {
+      return isAuthenticated() && request.auth.token.admin == true;
+    }
+
+    /// Validates that an uploaded file is an acceptable image within the 5 MB limit.
+    ///
+    /// Accepted content types:
+    ///   image/jpeg — standard JPEG photos
+    ///   image/png  — PNG with transparency support
+    ///   image/webp — modern compressed format used by Flutter's network_image
+    function isValidImage() {
+      return
+        // File must not exceed 5 MB
+        request.resource.size <= 5 * 1024 * 1024 &&
+        // Only image MIME types are permitted
+        request.resource.contentType.matches('image/(jpeg|png|webp)');
+    }
+
+    // =========================================================================
+    // cafes/{cafeId}/{filename}
+    // =========================================================================
+    //
+    // Cafe photos are crowd-sourced: any signed-in user may upload and view them.
+    // Deletion is restricted to admins to prevent vandalism.
+    // =========================================================================
+
+    match /cafes/{cafeId}/{filename} {
+      // Any authenticated user can view cafe images (displayed on the map / detail page).
+      allow read: if isAuthenticated();
+
+      // Any authenticated user can upload a photo to a cafe folder.
+      // File type and size are validated before the write is committed.
+      allow create: if isAuthenticated() && isValidImage();
+
+      // Overwriting an existing cafe image is restricted to admins only.
+      // This prevents users from replacing other users' photos.
+      allow update: if isAdmin() && isValidImage();
+
+      // Only admins may delete cafe images (content moderation).
+      allow delete: if isAdmin();
+    }
+
+    // =========================================================================
+    // users/{userId}/{filename}
+    // =========================================================================
+    //
+    // Profile images are private: only the owning user can read and write their
+    // own folder.  Admins retain delete access for policy enforcement.
+    // =========================================================================
+
+    match /users/{userId}/{filename} {
+      // Users may only read files in their own folder.
+      // Admins may read any user's files for support purposes.
+      allow read: if isOwner(userId) || isAdmin();
+
+      // Users may upload to their own folder only.
+      // File type and size are validated before the write is committed.
+      allow create: if isOwner(userId) && isValidImage();
+
+      // Users may overwrite (replace) their own profile photo.
+      allow update: if isOwner(userId) && isValidImage();
+
+      // Users may delete their own profile images (e.g., account cleanup).
+      // Admins may delete any user image for policy enforcement.
+      allow delete: if isOwner(userId) || isAdmin();
+    }
+
+    // =========================================================================
+    // All other paths — deny everything by default
+    // =========================================================================
+    //
+    // Firebase Storage uses a deny-by-default model: any path not explicitly
+    // matched above is automatically denied.  This catch-all makes the intent
+    // explicit and guards against future bucket structure additions.
+    // =========================================================================
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+
+  }
+}

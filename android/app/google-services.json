@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "149894159923",
+    "project_id": "cafeondo-dd418",
+    "storage_bucket": "cafeondo-dd418.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:149894159923:android:c73844c1ef5a5b6de58d46",
+        "android_client_info": {
+          "package_name": "com.cafeondo.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDGeccQXkcapeQQWX5GVX3GEgqCySZzlRc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

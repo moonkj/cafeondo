@@ -1,0 +1,70 @@
+name: cafeondo
+description: 카페온도 - 카페 소음 수준 크라우드소싱 앱
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State Management
+  flutter_riverpod: ^3.0.0
+
+  # Navigation
+  go_router: ^14.0.0
+
+  # Maps & Location
+  google_maps_flutter: ^2.10.0
+  geolocator: ^13.0.0
+  geocoding: ^3.0.0
+
+  # Firebase
+  firebase_core: ^3.0.0
+  firebase_auth: ^5.0.0
+  cloud_firestore: ^5.0.0
+  firebase_storage: ^12.0.0
+
+  # Auth
+  google_sign_in: ^6.0.0
+
+  # Charts
+  fl_chart: ^0.69.0
+
+  # UI & Fonts
+  google_fonts: ^6.2.1
+  flutter_animate: ^4.5.0
+  cached_network_image: ^3.3.1
+
+  # Storage
+  shared_preferences: ^2.3.0
+
+  # Utilities
+  intl: ^0.19.0
+  url_launcher: ^6.3.0
+
+  # ── Phase 2: 수익화 + 푸시 알림 ─────────────────────────────────────────
+
+  # Ads (배너 + 네이티브 광고만 사용. 전면/인터스티셜 광고 사용 금지.)
+  google_mobile_ads: ^5.0.0
+
+  # In-App Purchase (구독: 월간 ₩1,300 / 연간 ₩13,000)
+  in_app_purchase: ^3.2.0
+
+  # Push Notifications (FCM)
+  firebase_messaging: ^15.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/icons/

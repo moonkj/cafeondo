@@ -1,0 +1,236 @@
+rules_version = '2';
+
+// =============================================================================
+// CafeOndo (카페온도) — Firestore Security Rules
+// =============================================================================
+//
+// Collections overview:
+//   /cafes/{cafeId}          — Cafe information and aggregated noise statistics
+//   /measurements/{measId}   — Individual noise measurements by users
+//   /users/{userId}          — User profiles, levels, and gamification points
+//   /rankings/{rankingId}    — Pre-computed ranking documents (written by Cloud Functions)
+//
+// Role model:
+//   • Anonymous / unauthenticated — read-only access to cafes
+//   • Authenticated user          — create cafes, create/delete own measurements,
+//                                   read/write own profile, read rankings
+//   • Admin (Cloud Function)      — full write access via custom claim `admin: true`
+//                                   or Firebase Admin SDK (bypasses rules entirely)
+//
+// NOTE: The Firebase Admin SDK used by Cloud Functions bypasses all security rules.
+// The `isAdmin()` helper is therefore only relevant for privileged *client* operations
+// (e.g., a future admin panel running as an authenticated client with admin claim).
+// =============================================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // =========================================================================
+    // Helper functions
+    // =========================================================================
+
+    /// Returns true when the request comes from a signed-in user.
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    /// Returns true when the signed-in user's UID matches the given userId.
+    /// Use this to enforce ownership of a document.
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    /// Returns true when the signed-in user carries the `admin: true` custom claim.
+    /// Custom claims are set via the Firebase Admin SDK and are verified server-side.
+    function isAdmin() {
+      return isAuthenticated() && request.auth.token.admin == true;
+    }
+
+    /// Validates that an incoming measurement document has all required fields
+    /// with correct types and sane value ranges.
+    ///
+    /// Field constraints:
+    ///   cafeId        — non-empty string
+    ///   userId        — must equal the authenticated user's UID (anti-spoofing)
+    ///   decibelLevel  — number in [0, 130] dB (physiologically plausible range)
+    ///   noiseCategory — one of the four recognised category strings
+    ///   duration      — positive integer (seconds), max 3600 (1 hour)
+    ///   timestamp     — Firestore Timestamp type
+    function validMeasurement() {
+      let data = request.resource.data;
+      return
+        // cafeId: non-empty string reference
+        data.cafeId is string && data.cafeId.size() > 0 &&
+
+        // userId: must be the caller's own UID (prevents impersonation)
+        data.userId is string && data.userId == request.auth.uid &&
+
+        // decibelLevel: physically meaningful range 0–130 dB
+        data.decibelLevel is number &&
+        data.decibelLevel >= 0 &&
+        data.decibelLevel <= 130 &&
+
+        // noiseCategory: must be one of the four enum values used by the app
+        data.noiseCategory is string &&
+        data.noiseCategory in ['quiet', 'moderate', 'noisy', 'loud'] &&
+
+        // duration: measured in seconds; must be a positive integer up to 1 hour
+        data.duration is int &&
+        data.duration > 0 &&
+        data.duration <= 3600 &&
+
+        // timestamp: must be a Firestore Timestamp
+        data.timestamp is timestamp;
+    }
+
+    /// Returns true when the incoming user profile update touches ONLY the
+    /// client-editable fields: displayName, photoUrl, and notificationSettings.
+    /// System-managed fields (level, points, totalMeasurements, joinedAt, email)
+    /// may only be changed by Cloud Functions via the Admin SDK.
+    function validUserProfileUpdate() {
+      let allowed = ['displayName', 'photoUrl', 'notificationSettings'];
+      let changed = request.resource.data.diff(resource.data).affectedKeys();
+      return changed.hasOnly(allowed);
+    }
+
+    // =========================================================================
+    // /cafes/{cafeId}
+    // =========================================================================
+    //
+    // Document fields (from Cafe model):
+    //   name, address, latitude, longitude, averageNoiseLevel, noiseCategory,
+    //   totalMeasurements, recentMeasurements[], photos[], rating, tags[],
+    //   createdAt, updatedAt
+    //
+    // Write strategy:
+    //   • CREATE: any authenticated user may register a new cafe.
+    //   • UPDATE: only admin / Cloud Functions. Aggregate fields like
+    //     averageNoiseLevel, totalMeasurements, recentMeasurements, and noiseCategory
+    //     are updated atomically by the MeasurementRepository transaction or a
+    //     Firestore trigger — not directly by the client.
+    //   • DELETE: admin only.
+    // =========================================================================
+
+    match /cafes/{cafeId} {
+      // Public read — cafe listings and detail pages are visible to everyone,
+      // including unauthenticated users browsing the map.
+      allow read: if true;
+
+      // Any authenticated user may register a new cafe (crowd-sourced data).
+      // Basic shape validation: name, address, and coordinates are required.
+      allow create: if isAuthenticated() &&
+        request.resource.data.name is string &&
+        request.resource.data.name.size() > 0 &&
+        request.resource.data.address is string &&
+        request.resource.data.address.size() > 0 &&
+        request.resource.data.latitude is number &&
+        request.resource.data.latitude >= -90 &&
+        request.resource.data.latitude <= 90 &&
+        request.resource.data.longitude is number &&
+        request.resource.data.longitude >= -180 &&
+        request.resource.data.longitude <= 180;
+
+      // Updates are restricted to admin / Cloud Functions only.
+      // Aggregate fields (averageNoiseLevel, totalMeasurements, recentMeasurements,
+      // noiseCategory, updatedAt) must be managed server-side to prevent tampering.
+      // A privileged client with the admin custom claim (e.g., admin panel) may also
+      // perform updates.
+      allow update: if isAdmin();
+
+      // Only admins may hard-delete cafe documents.
+      allow delete: if isAdmin();
+    }
+
+    // =========================================================================
+    // /measurements/{measurementId}
+    // =========================================================================
+    //
+    // Document fields (from Measurement model):
+    //   cafeId, userId, decibelLevel, noiseCategory, duration,
+    //   timestamp, deviceInfo{platform, model, osVersion}, createdAt
+    //
+    // Immutability: once a measurement is written it must not be modified.
+    // Only the owner or an admin may delete their own measurement.
+    // =========================================================================
+
+    match /measurements/{measurementId} {
+      // Any authenticated user can read measurements — needed for cafe detail
+      // pages and the recent-measurements list.
+      allow read: if isAuthenticated();
+
+      // Authenticated users may create a measurement for themselves.
+      // The validMeasurement() function enforces field types, value ranges,
+      // and that userId == auth.uid (anti-spoofing).
+      allow create: if isAuthenticated() && validMeasurement();
+
+      // Measurements are immutable — no updates allowed from any client.
+      // The cafe aggregate transaction in MeasurementRepository uses
+      // transaction.update() on the *cafe* document, not the measurement.
+      allow update: if false;
+
+      // The owner may delete their own measurement (e.g., "undo" feature).
+      // Admins may delete any measurement for moderation purposes.
+      allow delete: if isOwner(resource.data.userId) || isAdmin();
+    }
+
+    // =========================================================================
+    // /users/{userId}
+    // =========================================================================
+    //
+    // Document fields (from UserProfile model):
+    //   displayName, email, photoUrl, totalMeasurements, level, points,
+    //   joinedAt, notificationSettings (optional map)
+    //
+    // Privacy: users can only access their own profile document.
+    // System fields (totalMeasurements, level, points, joinedAt, email) are
+    // managed by Cloud Functions and must not be writable by the client on update.
+    // =========================================================================
+
+    match /users/{userId} {
+      // Users may only read their own profile (private data).
+      // Admins may read any profile for support/moderation.
+      allow read: if isOwner(userId) || isAdmin();
+
+      // A user may create their own profile document on sign-up.
+      // The document ID must match the authenticated UID (prevents creating
+      // profiles on behalf of other users).
+      allow create: if isOwner(userId) &&
+        request.resource.data.uid == request.auth.uid &&
+        request.resource.data.displayName is string &&
+        request.resource.data.displayName.size() > 0 &&
+        request.resource.data.email is string;
+
+      // Users may update their own profile, but only touch the three
+      // client-editable fields: displayName, photoUrl, notificationSettings.
+      // System fields are updated by Cloud Functions (Admin SDK bypasses rules).
+      allow update: if isOwner(userId) && validUserProfileUpdate();
+
+      // Users may delete their own account data (GDPR / right to erasure).
+      // Admins may also delete profiles for moderation.
+      allow delete: if isOwner(userId) || isAdmin();
+    }
+
+    // =========================================================================
+    // /rankings/{rankingId}
+    // =========================================================================
+    //
+    // Rankings are pre-computed documents written by scheduled Cloud Functions
+    // (e.g., daily top-users, top-cafes).  Clients have read-only access.
+    //
+    // Example document IDs: "top_cafes_quiet", "top_users_weekly", etc.
+    // =========================================================================
+
+    match /rankings/{rankingId} {
+      // Any signed-in user may read ranking documents (leaderboards are public
+      // within the authenticated app).
+      allow read: if isAuthenticated();
+
+      // All writes come from Cloud Functions using the Admin SDK, which bypasses
+      // rules entirely.  The `allow write: if false` here explicitly prevents
+      // any client (including admins with the custom claim) from writing ranking
+      // documents directly — they should only be written server-side.
+      allow write: if false;
+    }
+
+  } // end /databases/{database}/documents
+} // end service cloud.firestore
