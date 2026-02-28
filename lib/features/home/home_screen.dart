@@ -155,7 +155,7 @@ class _MeasureFab extends ConsumerWidget {
             ),
           ],
         ),
-        child: const Column(
+        child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.graphic_eq_rounded, color: Colors.white, size: 22),

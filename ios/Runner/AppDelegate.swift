@@ -13,7 +13,7 @@ import GoogleMaps
     FirebaseApp.configure()
 
     // Configure Google Maps
-    GMSServices.provideAPIKey("YOUR_GOOGLE_MAPS_API_KEY")
+    GMSServices.provideAPIKey("여기에키입력")
 
     GeneratedPluginRegistrant.register(with: self)
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)

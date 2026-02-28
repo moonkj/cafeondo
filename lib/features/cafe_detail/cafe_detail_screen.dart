@@ -37,7 +37,7 @@ class CafeDetailScreen extends ConsumerWidget {
               elevation: 0,
               leading: _BackButton(),
             ),
-            body: const Center(
+            body: Center(
               child: Text(
                 '카페 정보를 찾을 수 없어요',
                 style: TextStyle(fontFamily: GoogleFonts.notoSansKr().fontFamily),
@@ -63,7 +63,7 @@ class CafeDetailScreen extends ConsumerWidget {
           elevation: 0,
           leading: _BackButton(),
         ),
-        body: const Center(
+        body: Center(
           child: Text(
             '오류가 발생했어요',
             style: TextStyle(fontFamily: GoogleFonts.notoSansKr().fontFamily),
@@ -806,7 +806,7 @@ class _MeasureCTAButton extends StatelessWidget {
                 size: 22,
               ),
               const SizedBox(width: 10),
-              const Text(
+              Text(
                 '소음 측정하기',
                 style: TextStyle(
                   color: Colors.white,

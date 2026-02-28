@@ -95,7 +95,7 @@ class _AtmosphereChartState extends State<AtmosphereChart>
                       : '오후 ${hour - 12}시';
               return LineTooltipItem(
                 '$label\n${spot.y.round()}dB',
-                const TextStyle(
+                TextStyle(
                   color: Colors.white,
                   fontSize: 12,
                   fontWeight: FontWeight.w600,

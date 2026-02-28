@@ -370,7 +370,7 @@ class _MeasureButton extends StatelessWidget {
             const SizedBox(width: 10),
             Text(
               isMeasuring ? '측정 중지' : '측정 시작',
-              style: const TextStyle(
+              style: TextStyle(
                 color: Colors.white,
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
@@ -558,7 +558,7 @@ class _ResultView extends StatelessWidget {
                   ),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(Icons.save_outlined, color: Colors.white, size: 20),

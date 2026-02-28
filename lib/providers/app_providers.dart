@@ -50,7 +50,7 @@ final currentPositionProvider = Provider<Position?>((ref) {
   return locationAsync.whenData((result) {
     if (result is LocationSuccess) return result.position;
     return null;
-  }).valueOrNull;
+  }).value;
 });
 
 // ---------------------------------------------------------------------------

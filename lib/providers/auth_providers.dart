@@ -19,7 +19,7 @@ export '../data/repositories/auth_repository.dart'
 /// 현재 로그인된 Firebase [User]를 노출합니다.
 /// 로그인되지 않았으면 null.
 final currentUserProvider = Provider<User?>((ref) {
-  return ref.watch(authStateProvider).valueOrNull;
+  return ref.watch(authStateProvider).value;
 });
 
 // ---------------------------------------------------------------------------
