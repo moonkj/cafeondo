@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'core/theme/app_theme.dart';
 import 'core/constants/app_strings.dart';
 import 'core/constants/app_colors.dart';
-import 'core/constants/app_dimensions.dart';
 import 'features/splash/splash_screen.dart';
 import 'features/home/home_screen.dart';
+import 'features/explore/explore_screen.dart';
 import 'features/cafe_detail/cafe_detail_screen.dart';
 import 'features/measurement/measurement_screen.dart';
 import 'features/ranking/ranking_screen.dart';
@@ -22,6 +23,7 @@ abstract class AppRoutes {
   static const String splash = '/';
   static const String onboarding = '/onboarding';
   static const String home = '/home';
+  static const String explore = '/explore';
   static const String cafeDetail = '/cafe/:id';
   static const String measurement = '/measure';
   static const String ranking = '/ranking';
@@ -61,7 +63,7 @@ final _router = GoRouter(
       ),
     ),
 
-    // Shell route: routes sharing a bottom nav bar
+    // Shell route: 하단 네비 공유 (지도 / 탐색 / 랭킹 / 프로필)
     ShellRoute(
       builder: (context, state, child) {
         return _MainShell(child: child, location: state.uri.path);
@@ -76,13 +78,11 @@ final _router = GoRouter(
           ),
         ),
         GoRoute(
-          path: AppRoutes.measurement,
-          name: 'measurement',
+          path: AppRoutes.explore,
+          name: 'explore',
           pageBuilder: (context, state) => NoTransitionPage(
             key: state.pageKey,
-            child: MeasurementScreen(
-              cafeId: state.extra as String?,
-            ),
+            child: const ExploreScreen(),
           ),
         ),
         GoRoute(
@@ -116,6 +116,17 @@ final _router = GoRouter(
           transitionsBuilder: _slideTransition,
         );
       },
+    ),
+
+    // Measurement (full-screen push from cafe detail, location-gated)
+    GoRoute(
+      path: AppRoutes.measurement,
+      name: 'measurement',
+      pageBuilder: (context, state) => CustomTransitionPage(
+        key: state.pageKey,
+        child: MeasurementScreen(cafeId: state.extra as String?),
+        transitionsBuilder: _slideTransition,
+      ),
     ),
 
     // Settings (full-screen push)
@@ -179,7 +190,7 @@ class _MainShell extends StatelessWidget {
 
   int _selectedIndex(String location) {
     if (location.startsWith('/home')) return 0;
-    if (location.startsWith('/measure')) return 1;
+    if (location.startsWith('/explore')) return 1;
     if (location.startsWith('/ranking')) return 2;
     if (location.startsWith('/profile')) return 3;
     return 0;
@@ -197,7 +208,7 @@ class _MainShell extends StatelessWidget {
             case 0:
               context.go(AppRoutes.home);
             case 1:
-              context.go(AppRoutes.measurement);
+              context.go(AppRoutes.explore);
             case 2:
               context.go(AppRoutes.ranking);
             case 3:
@@ -221,10 +232,10 @@ class _CafeOndoBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const items = [
-      _NavItem(icon: Icons.map_outlined, activeIcon: Icons.map, label: AppStrings.navHome),
-      _NavItem(icon: Icons.graphic_eq_outlined, activeIcon: Icons.graphic_eq, label: AppStrings.navMeasure),
-      _NavItem(icon: Icons.leaderboard_outlined, activeIcon: Icons.leaderboard, label: AppStrings.navRanking),
-      _NavItem(icon: Icons.person_outline, activeIcon: Icons.person, label: AppStrings.navProfile),
+      _NavItem(icon: Icons.map_outlined, activeIcon: Icons.map_rounded, label: AppStrings.navHome),
+      _NavItem(icon: Icons.grid_view_outlined, activeIcon: Icons.grid_view_rounded, label: AppStrings.navExplore),
+      _NavItem(icon: Icons.leaderboard_outlined, activeIcon: Icons.leaderboard_rounded, label: AppStrings.navRanking),
+      _NavItem(icon: Icons.person_outline_rounded, activeIcon: Icons.person_rounded, label: AppStrings.navProfile),
     ];
 
     return Container(
@@ -240,35 +251,6 @@ class _CafeOndoBottomNav extends StatelessWidget {
             children: List.generate(items.length, (i) {
               final item = items[i];
               final isSelected = i == currentIndex;
-              final isMeasure = i == 1;
-
-              if (isMeasure) {
-                // 측정 버튼: 강조 FAB 스타일
-                return Expanded(
-                  child: GestureDetector(
-                    onTap: () => onTap(i),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          width: 48,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            color: AppColors.deepTeal,
-                            borderRadius: BorderRadius.circular(
-                                AppDimensions.radiusSmall),
-                          ),
-                          child: Icon(
-                            isSelected ? item.activeIcon : item.icon,
-                            color: AppColors.white,
-                            size: AppDimensions.iconMedium,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              }
 
               return Expanded(
                 child: GestureDetector(
@@ -277,25 +259,36 @@ class _CafeOndoBottomNav extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
-                        isSelected ? item.activeIcon : item.icon,
-                        color: isSelected
-                            ? AppColors.deepTeal
-                            : AppColors.textHint,
-                        size: AppDimensions.iconStandard,
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 180),
+                        width: 36,
+                        height: 28,
+                        decoration: isSelected
+                            ? BoxDecoration(
+                                color: AppColors.lightTeal,
+                                borderRadius: BorderRadius.circular(14),
+                              )
+                            : null,
+                        child: Icon(
+                          isSelected ? item.activeIcon : item.icon,
+                          color: isSelected
+                              ? AppColors.deepTeal
+                              : AppColors.textHint,
+                          size: 22,
+                        ),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         item.label,
-                        style:
-                            Theme.of(context).textTheme.labelSmall?.copyWith(
-                                  color: isSelected
-                                      ? AppColors.deepTeal
-                                      : AppColors.textHint,
-                                  fontWeight: isSelected
-                                      ? FontWeight.w700
-                                      : FontWeight.w500,
-                                ),
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              color: isSelected
+                                  ? AppColors.deepTeal
+                                  : AppColors.textHint,
+                              fontWeight: isSelected
+                                  ? FontWeight.w700
+                                  : FontWeight.w500,
+                              fontSize: 11,
+                            ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -335,6 +328,11 @@ class CafeOndoApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       routerConfig: _router,
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       // 한국어 기본 로케일
       locale: const Locale('ko', 'KR'),
       supportedLocales: const [

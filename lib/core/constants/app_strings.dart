@@ -9,6 +9,7 @@ abstract class AppStrings {
 
   // ── Navigation ───────────────────────────────────────────────────────────────
   static const String navHome = '지도';
+  static const String navExplore = '탐색';
   static const String navRanking = '랭킹';
   static const String navMeasure = '측정';
   static const String navProfile = '프로필';

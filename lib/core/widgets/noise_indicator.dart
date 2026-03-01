@@ -89,13 +89,13 @@ class NoiseIndicator extends StatelessWidget {
   IconData get _icon {
     switch (noiseCategory) {
       case NoiseCategory.quiet:
-        return Icons.volume_mute_rounded;
+        return Icons.self_improvement_rounded; // 딥 포커스
       case NoiseCategory.moderate:
-        return Icons.volume_down_rounded;
+        return Icons.local_cafe_rounded;        // 소프트 바이브
       case NoiseCategory.noisy:
-        return Icons.volume_up_rounded;
+        return Icons.groups_rounded;            // 소셜 버즈
       case NoiseCategory.loud:
-        return Icons.hearing_rounded;
+        return Icons.whatshot_rounded;          // 라이브 에너지
     }
   }
 
@@ -311,26 +311,26 @@ class NoiseIndicatorCard extends StatelessWidget {
   IconData get _icon {
     switch (noiseCategory) {
       case NoiseCategory.quiet:
-        return Icons.volume_mute_rounded;
+        return Icons.self_improvement_rounded; // 딥 포커스
       case NoiseCategory.moderate:
-        return Icons.volume_down_rounded;
+        return Icons.local_cafe_rounded;        // 소프트 바이브
       case NoiseCategory.noisy:
-        return Icons.volume_up_rounded;
+        return Icons.groups_rounded;            // 소셜 버즈
       case NoiseCategory.loud:
-        return Icons.hearing_rounded;
+        return Icons.whatshot_rounded;          // 라이브 에너지
     }
   }
 
   String get _description {
     switch (noiseCategory) {
       case NoiseCategory.quiet:
-        return '조용해서 집중하기 좋아요';
+        return '완전한 집중이 가능한 몰입 공간이에요';
       case NoiseCategory.moderate:
-        return '적당한 소음, 대화하기 좋아요';
+        return '여유롭고 편안한 카페 분위기예요';
       case NoiseCategory.noisy:
-        return '다소 시끄럽지만 활기차요';
+        return '에너지 넘치는 소셜 공간이에요';
       case NoiseCategory.loud:
-        return '매우 시끄러운 분위기예요';
+        return '열정적이고 생동감 넘치는 공간이에요';
     }
   }
 

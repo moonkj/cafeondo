@@ -2,9 +2,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-import '../../providers/cafe_providers.dart';
 import 'widgets/cafe_list_sheet.dart';
 import 'widgets/map_view.dart';
 
@@ -56,10 +54,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           CafeListSheet(sheetController: _sheetController),
         ],
       ),
-
-      // FAB for quick measurement — centered above the shell's nav bar
-      floatingActionButton: _MeasureFab(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 }
@@ -132,46 +126,3 @@ class _SearchBar extends StatelessWidget {
 // Measure FAB
 // ---------------------------------------------------------------------------
 
-class _MeasureFab extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return GestureDetector(
-      onTap: () => context.go('/measure'),
-      child: Container(
-        width: 60,
-        height: 60,
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [_kDeepTeal, _kMutedTeal],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: _kDeepTeal.withOpacity(0.35),
-              blurRadius: 16,
-              offset: const Offset(0, 6),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.graphic_eq_rounded, color: Colors.white, size: 22),
-            SizedBox(height: 1),
-            Text(
-              '측정',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 9,
-                fontWeight: FontWeight.w600,
-                fontFamily: GoogleFonts.notoSansKr().fontFamily,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}

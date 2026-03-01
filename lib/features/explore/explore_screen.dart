@@ -33,11 +33,11 @@ extension _ExploreFilterLabel on _ExploreFilter {
       case _ExploreFilter.all:
         return '전체';
       case _ExploreFilter.quiet:
-        return '조용한';
+        return '딥 포커스';
       case _ExploreFilter.moderate:
-        return '보통';
+        return '소프트 바이브';
       case _ExploreFilter.noisy:
-        return '시끄러움';
+        return '소셜 버즈';
       case _ExploreFilter.nearby:
         return '가까운순';
       case _ExploreFilter.popular:

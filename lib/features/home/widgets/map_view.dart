@@ -1,11 +1,12 @@
-import 'package:flutter/foundation.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'dart:math' as math;
 import 'dart:ui' as ui;
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:go_router/go_router.dart';
+import 'package:geolocator/geolocator.dart';
 
 import '../../../providers/cafe_providers.dart';
 
@@ -17,11 +18,8 @@ const Color _kLightTeal = Color(0xFFD6F5FA);
 const Color _kOffWhite = Color(0xFFFCFAF6);
 const Color _kWarmBeige = Color(0xFFE5E3D4);
 const Color _kTerra = Color(0xFFA84B2F);
-
-// Mauve for loud noise
 const Color _kMauve = Color(0xFF9C6B8A);
 
-/// Color per noise level for map markers
 Color _markerColor(NoiseLevel level) {
   switch (level) {
     case NoiseLevel.quiet:
@@ -43,172 +41,129 @@ class MapView extends ConsumerStatefulWidget {
 }
 
 class _MapViewState extends ConsumerState<MapView> {
-  GoogleMapController? _mapController;
-  final Set<Marker> _markers = {};
+  final MapController _mapController = MapController();
+  LatLng? _myLocation;
 
-  static const CameraPosition _initialPosition = CameraPosition(
-    target: LatLng(37.5448, 127.0557), // Seoul Seongsu-dong
-    zoom: 14.5,
-  );
+  static const _initial = LatLng(37.5448, 127.0557); // 성수동
 
   @override
   void initState() {
     super.initState();
+    _fetchMyLocation();
   }
 
-  Future<void> _buildMarkers(List<CafeModel> cafes) async {
-    final newMarkers = <Marker>{};
-    for (final cafe in cafes) {
-      final bitmap = await _createMarkerBitmap(cafe);
-      final marker = Marker(
-        markerId: MarkerId(cafe.id),
-        position: cafe.location,
-        icon: bitmap,
-        onTap: () {
-          ref.read(selectedCafeProvider.notifier).set(cafe);
-          context.push('/cafe/${cafe.id}');
-        },
-      );
-      newMarkers.add(marker);
-    }
-    if (mounted) {
-      setState(() {
-        _markers
-          ..clear()
-          ..addAll(newMarkers);
-      });
-    }
-  }
-
-  Future<BitmapDescriptor> _createMarkerBitmap(CafeModel cafe) async {
-    final color = _markerColor(cafe.noiseLevel);
-    final recorder = ui.PictureRecorder();
-    final canvas = Canvas(recorder);
-    const size = 44.0;
-
-    // Background circle
-    final bgPaint = Paint()..color = color;
-    canvas.drawCircle(
-      const Offset(size / 2, size / 2),
-      size / 2 - 2,
-      bgPaint,
-    );
-
-    // Border
-    final borderPaint = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.5;
-    canvas.drawCircle(
-      const Offset(size / 2, size / 2),
-      size / 2 - 2,
-      borderPaint,
-    );
-
-    // dB text
-    final textPainter = TextPainter(
-      text: TextSpan(
-        text: '${cafe.averageDb.round()}',
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 13,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    );
-    textPainter.layout();
-    textPainter.paint(
-      canvas,
-      Offset(
-        (size - textPainter.width) / 2,
-        (size - textPainter.height) / 2,
-      ),
-    );
-
-    final picture = recorder.endRecording();
-    final image = await picture.toImage(size.toInt(), size.toInt());
-    final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-
-    return BitmapDescriptor.fromBytes(bytes!.buffer.asUint8List());
-  }
-
-  void _onMapCreated(GoogleMapController controller) {
-    _mapController = controller;
-    debugPrint('[MapView] GoogleMap created successfully');
-    _applyMapStyle(controller);
-  }
-
-  Future<void> _applyMapStyle(GoogleMapController controller) async {
-    // Minimal map style — muted colors, no POI clutter
-    const style = '''
-[
-  {"featureType":"poi","stylers":[{"visibility":"off"}]},
-  {"featureType":"transit","stylers":[{"visibility":"off"}]},
-  {"featureType":"road","elementType":"labels.icon","stylers":[{"visibility":"off"}]},
-  {"featureType":"water","elementType":"geometry","stylers":[{"color":"#cce8ed"}]},
-  {"featureType":"landscape","elementType":"geometry","stylers":[{"color":"#f3f3ee"}]},
-  {"featureType":"road","elementType":"geometry","stylers":[{"color":"#ffffff"}]},
-  {"featureType":"road","elementType":"labels.text.fill","stylers":[{"color":"#6a6a6a"}]},
-  {"featureType":"administrative.locality","elementType":"labels.text.fill","stylers":[{"color":"#091717"}]},
-  {"featureType":"administrative.neighborhood","elementType":"labels.text.fill","stylers":[{"color":"#555555"}]}
-]
-''';
+  Future<void> _fetchMyLocation() async {
     try {
-      await controller.setMapStyle(style);
-    } catch (e) {
-      // Map style application failed — map will render with default style
-      debugPrint('[MapView] setMapStyle error (non-fatal): $e');
+      final permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) return;
+
+      final pos = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.medium,
+        ),
+      );
+      if (mounted) {
+        setState(() {
+          _myLocation = LatLng(pos.latitude, pos.longitude);
+        });
+        _mapController.move(_myLocation!, 14.5);
+      }
+    } catch (_) {
+      // 권한 없거나 실패 시 초기 위치 유지
     }
   }
 
   void _goToMyLocation() {
-    // In a real app, use geolocator to get current position
-    _mapController?.animateCamera(
-      CameraUpdate.newCameraPosition(_initialPosition),
-    );
+    if (_myLocation != null) {
+      _mapController.move(_myLocation!, 15.0);
+    } else {
+      _mapController.move(_initial, 14.5);
+      _fetchMyLocation();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final cafesAsync = ref.watch(cafesProvider);
 
-    cafesAsync.whenData((cafes) {
-      if (_markers.isEmpty) {
-        _buildMarkers(cafes);
-      }
-    });
-
-    // Log cafes error so it doesn't silently swallow map data failures
-    if (cafesAsync.hasError) {
-      debugPrint('[MapView] cafesProvider error: ${cafesAsync.error}');
-    }
-
     return Stack(
       children: [
-        GoogleMap(
-          onMapCreated: _onMapCreated,
-          initialCameraPosition: _initialPosition,
-          markers: _markers,
-          myLocationEnabled: true,
-          myLocationButtonEnabled: false,
-          zoomControlsEnabled: false,
-          mapToolbarEnabled: false,
-          compassEnabled: false,
-          padding: const EdgeInsets.only(
-            top: 80,
-            bottom: 260,
+        // ── 지도 ──────────────────────────────────────────────────────────
+        FlutterMap(
+          mapController: _mapController,
+          options: MapOptions(
+            initialCenter: _initial,
+            initialZoom: 14.5,
+            minZoom: 10,
+            maxZoom: 18,
           ),
+          children: [
+            // OpenStreetMap 타일 (API키 불필요)
+            TileLayer(
+              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+              userAgentPackageName: 'com.cafeondo.app',
+              tileBuilder: _mintTileBuilder,
+            ),
+
+            // 내 위치 마커
+            if (_myLocation != null)
+              MarkerLayer(
+                markers: [
+                  Marker(
+                    point: _myLocation!,
+                    width: 20,
+                    height: 20,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: _kDeepTeal,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2.5),
+                        boxShadow: [
+                          BoxShadow(
+                            color: _kDeepTeal.withOpacity(0.4),
+                            blurRadius: 8,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+            // 카페 마커
+            cafesAsync.when(
+              data: (cafes) => MarkerLayer(
+                markers: cafes.map((cafe) {
+                  final color = _markerColor(cafe.noiseLevel);
+                  return Marker(
+                    point: cafe.location,
+                    width: 56,
+                    height: 56,
+                    child: GestureDetector(
+                      onTap: () {
+                        ref.read(selectedCafeProvider.notifier).set(cafe);
+                        context.push('/cafe/${cafe.id}');
+                      },
+                      child: _CafeMarker(cafe: cafe, color: color),
+                    ),
+                  );
+                }).toList(),
+              ),
+              loading: () => const MarkerLayer(markers: []),
+              error: (_, __) => const MarkerLayer(markers: []),
+            ),
+          ],
         ),
 
-        // Custom My Location button
+        // ── 내 위치 버튼 ────────────────────────────────────────────────
         Positioned(
           right: 16,
           bottom: 280,
           child: _LocationButton(onTap: _goToMyLocation),
         ),
 
-        // Noise level legend
+        // ── 범례 ────────────────────────────────────────────────────────
         Positioned(
           left: 16,
           bottom: 280,
@@ -219,13 +174,101 @@ class _MapViewState extends ConsumerState<MapView> {
   }
 }
 
+/// OSM 타일에 민트 틴트를 적용해 앱 컬러와 조화롭게 만듦
+Widget _mintTileBuilder(
+  BuildContext context,
+  Widget tileWidget,
+  TileImage tile,
+) {
+  return ColorFiltered(
+    colorFilter: const ColorFilter.matrix([
+      // 채도 낮추고 민트 틴트 적용
+      0.85, 0.05, 0.10, 0, 8,
+      0.05, 0.88, 0.07, 0, 8,
+      0.05, 0.08, 0.90, 0, 10,
+      0,    0,    0,    1, 0,
+    ]),
+    child: tileWidget,
+  );
+}
+
 // ---------------------------------------------------------------------------
-// My Location Button
+// 카페 마커 위젯
+// ---------------------------------------------------------------------------
+
+class _CafeMarker extends StatelessWidget {
+  final CafeModel cafe;
+  final Color color;
+
+  const _CafeMarker({required this.cafe, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+            border: Border.all(color: Colors.white, width: 2.5),
+            boxShadow: [
+              BoxShadow(
+                color: color.withOpacity(0.4),
+                blurRadius: 8,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Center(
+            child: Text(
+              '${cafe.averageDb.round()}',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 13,
+                fontWeight: FontWeight.w800,
+                height: 1.0,
+              ),
+            ),
+          ),
+        ),
+        // 말풍선 꼬리
+        CustomPaint(
+          size: const Size(8, 5),
+          painter: _MarkerTailPainter(color),
+        ),
+      ],
+    );
+  }
+}
+
+class _MarkerTailPainter extends CustomPainter {
+  final Color color;
+  _MarkerTailPainter(this.color);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = color;
+    final path = ui.Path()
+      ..moveTo(0, 0)
+      ..lineTo(size.width / 2, size.height)
+      ..lineTo(size.width, 0)
+      ..close();
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(_MarkerTailPainter old) => old.color != color;
+}
+
+// ---------------------------------------------------------------------------
+// 내 위치 버튼
 // ---------------------------------------------------------------------------
 
 class _LocationButton extends StatelessWidget {
   final VoidCallback onTap;
-
   const _LocationButton({required this.onTap});
 
   @override
@@ -247,7 +290,7 @@ class _LocationButton extends StatelessWidget {
             ),
           ],
         ),
-        child: Icon(
+        child: const Icon(
           Icons.my_location_rounded,
           color: _kDeepTeal,
           size: 20,
@@ -258,7 +301,7 @@ class _LocationButton extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Noise Legend
+// 범례
 // ---------------------------------------------------------------------------
 
 class _NoiseLegend extends StatelessWidget {
@@ -282,13 +325,13 @@ class _NoiseLegend extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          _LegendItem(color: _kMutedTeal, label: '조용함'),
+          _LegendItem(color: _kMutedTeal, label: '딥 포커스'),
           const SizedBox(height: 4),
-          _LegendItem(color: _kWarmBeige, label: '보통'),
+          _LegendItem(color: _kWarmBeige, label: '소프트 바이브'),
           const SizedBox(height: 4),
-          _LegendItem(color: _kTerra, label: '시끄러움'),
+          _LegendItem(color: _kTerra, label: '소셜 버즈'),
           const SizedBox(height: 4),
-          _LegendItem(color: _kMauve, label: '매우 시끄러움'),
+          _LegendItem(color: _kMauve, label: '라이브 에너지'),
         ],
       ),
     );
@@ -298,7 +341,6 @@ class _NoiseLegend extends StatelessWidget {
 class _LegendItem extends StatelessWidget {
   final Color color;
   final String label;
-
   const _LegendItem({required this.color, required this.label});
 
   @override

@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:latlong2/latlong.dart';
 
 // ---------------------------------------------------------------------------
 // Models
@@ -16,13 +16,26 @@ extension NoiseLevelExtension on NoiseLevel {
   String get label {
     switch (this) {
       case NoiseLevel.quiet:
-        return '조용함';
+        return '딥 포커스';
       case NoiseLevel.moderate:
-        return '보통';
+        return '소프트 바이브';
       case NoiseLevel.noisy:
-        return '시끄러움';
+        return '소셜 버즈';
       case NoiseLevel.loud:
-        return '매우 시끄러움';
+        return '라이브 에너지';
+    }
+  }
+
+  String get subtitle {
+    switch (this) {
+      case NoiseLevel.quiet:
+        return '몰입 온도';
+      case NoiseLevel.moderate:
+        return '여유 온도';
+      case NoiseLevel.noisy:
+        return '활기 온도';
+      case NoiseLevel.loud:
+        return '열정 온도';
     }
   }
 

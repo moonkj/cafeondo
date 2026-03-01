@@ -26,19 +26,26 @@ Future<void> main() async {
     DeviceOrientation.portraitDown,
   ]);
 
-  // Firebase 초기화
-  await Firebase.initializeApp();
+  // Firebase 초기화 (필수 - UI 표시 전 완료 필요)
+  try {
+    await Firebase.initializeApp();
+  } catch (e) {
+    debugPrint('[main] Firebase 초기화 실패: $e');
+  }
 
-  // Google Mobile Ads SDK 초기화
-  await AdService.instance.initialize();
-
-  // FCM 푸시 알림 초기화
-  await NotificationService.instance.initialize();
-
-  // 앱 실행 (ProviderScope으로 Riverpod 활성화)
+  // 앱 실행 - UI를 먼저 표시 (흰 화면 방지)
   runApp(
     const ProviderScope(
       child: CafeOndoApp(),
     ),
   );
+
+  // 비필수 서비스는 UI 표시 후 백그라운드에서 초기화
+  // (runApp 이후이므로 알림 권한 다이얼로그가 앱 위에 표시됨)
+  AdService.instance.initialize().catchError((e) {
+    debugPrint('[main] AdService 초기화 실패 (무시): $e');
+  });
+  NotificationService.instance.initialize().catchError((e) {
+    debugPrint('[main] NotificationService 초기화 실패 (무시): $e');
+  });
 }

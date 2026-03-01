@@ -1,29 +1,44 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-/// 소음 카테고리 (dB 기반)
+/// 소음 카테고리 (dB 기반) — 카페온도 브랜드 언어
 enum NoiseCategory {
-  /// 0–40 dB: 조용함
+  /// ~50 dB: 딥 포커스 (몰입 온도)
   quiet,
 
-  /// 40–60 dB: 보통
+  /// 51–65 dB: 소프트 바이브 (여유 온도)
   moderate,
 
-  /// 60–75 dB: 시끄러움
+  /// 66–75 dB: 소셜 버즈 (활기 온도)
   noisy,
 
-  /// 75+ dB: 매우 시끄러움
+  /// 76+ dB: 라이브 에너지 (열정 온도)
   loud;
 
+  /// 카페온도 브랜드 라벨 (카페 노출용)
   String get label {
     switch (this) {
       case NoiseCategory.quiet:
-        return '조용함';
+        return '딥 포커스';
       case NoiseCategory.moderate:
-        return '보통';
+        return '소프트 바이브';
       case NoiseCategory.noisy:
-        return '시끄러움';
+        return '소셜 버즈';
       case NoiseCategory.loud:
-        return '매우 시끄러움';
+        return '라이브 에너지';
+    }
+  }
+
+  /// 부제 (온도 표현)
+  String get subtitle {
+    switch (this) {
+      case NoiseCategory.quiet:
+        return '몰입 온도';
+      case NoiseCategory.moderate:
+        return '여유 온도';
+      case NoiseCategory.noisy:
+        return '활기 온도';
+      case NoiseCategory.loud:
+        return '열정 온도';
     }
   }
 
