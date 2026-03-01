@@ -220,10 +220,10 @@ class MapViewState extends ConsumerState<MapView> {
 
   // ── Marker set ────────────────────────────────────────────────────────────
 
-  Set<gm.Marker> _buildMarkers(BuildContext context) {
+  Set<gm.Marker> _buildMarkers(
+      AsyncValue<List<CafeModel>> cafesAsync, BuildContext context) {
     if (!_iconsReady) return {};
 
-    final cafesAsync = ref.read(cafesProvider);
     final cafes = cafesAsync.when(
       data: (d) => d,
       loading: () => <CafeModel>[],
@@ -252,29 +252,20 @@ class MapViewState extends ConsumerState<MapView> {
 
   @override
   Widget build(BuildContext context) {
-    ref.watch(cafesProvider); // rebuild when cafes load
+    final cafesAsync = ref.watch(cafesProvider); // rebuild when cafes load
 
     return Stack(
+      fit: StackFit.expand,
       children: [
-        gm.GoogleMap(
-          initialCameraPosition: const gm.CameraPosition(
-            target: _initial,
-            zoom: 14.5,
+        // GoogleMap temporarily replaced — testing nav bar touch interception
+        Container(
+          color: const Color(0xFFF5F5F5),
+          child: const Center(
+            child: Text('지도 로딩 중...', style: TextStyle(color: Color(0xFF9E9E9E))),
           ),
-          onMapCreated: (ctrl) {
-            _ctrl = ctrl;
-            ctrl.setMapStyle(_kMapStyle);
-          },
-          markers: _buildMarkers(context),
-          myLocationEnabled: true,
-          myLocationButtonEnabled: false,
-          zoomControlsEnabled: false,
-          compassEnabled: false,
-          mapToolbarEnabled: false,
-          minMaxZoomPreference: const gm.MinMaxZoomPreference(10, 18),
         ),
 
-        // My location FAB (Noise Spot position: right 16, bottom 94)
+        // My location FAB
         Positioned(
           right: 16,
           bottom: widget.bottomOffset + 12,

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:cafeondo/core/constants/app_colors.dart';
@@ -44,56 +43,71 @@ class _RankingScreenState extends ConsumerState<RankingScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.offWhite,
-      appBar: AppBar(
-        backgroundColor: AppColors.offWhite,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        title: const Text(
-          '랭킹',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-            color: AppColors.navy,
-          ),
-        ),
-        centerTitle: true,
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(48),
-          child: Container(
-            decoration: const BoxDecoration(
-              border: Border(
-                bottom: BorderSide(color: AppColors.divider, width: 1),
-              ),
+    return Container(
+      color: AppColors.offWhite,
+      child: Column(
+        children: [
+          // ── Manual AppBar + TabBar ────────────────────────────────────
+          SafeArea(
+            bottom: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Title row
+                SizedBox(
+                  height: 56,
+                  child: Center(
+                    child: const Text(
+                      '랭킹',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.navy,
+                      ),
+                    ),
+                  ),
+                ),
+                // TabBar
+                Container(
+                  decoration: const BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(color: AppColors.divider, width: 1),
+                    ),
+                  ),
+                  child: TabBar(
+                    controller: _tabController,
+                    labelColor: AppColors.deepTeal,
+                    unselectedLabelColor: AppColors.textHint,
+                    labelStyle: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                    ),
+                    unselectedLabelStyle: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    indicatorColor: AppColors.deepTeal,
+                    indicatorWeight: 2,
+                    indicatorSize: TabBarIndicatorSize.tab,
+                    dividerColor: Colors.transparent,
+                    tabs: _tabs,
+                  ),
+                ),
+              ],
             ),
-            child: TabBar(
+          ),
+
+          // ── Tab Content ──────────────────────────────────────────────
+          Expanded(
+            child: TabBarView(
               controller: _tabController,
-              labelColor: AppColors.deepTeal,
-              unselectedLabelColor: AppColors.textHint,
-              labelStyle: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-              ),
-              unselectedLabelStyle: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-              ),
-              indicatorColor: AppColors.deepTeal,
-              indicatorWeight: 2,
-              indicatorSize: TabBarIndicatorSize.tab,
-              dividerColor: Colors.transparent,
-              tabs: _tabs,
+              children: const [
+                _QuietCafesTab(),
+                _TopMeasurersTab(),
+                _ActiveCafesTab(),
+              ],
             ),
           ),
-        ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        children: const [
-          _QuietCafesTab(),
-          _TopMeasurersTab(),
-          _ActiveCafesTab(),
         ],
       ),
     );
@@ -121,10 +135,7 @@ class _QuietCafesTab extends ConsumerWidget {
           ),
           itemCount: cafes.length,
           itemBuilder: (context, index) {
-            return _QuietCafeCard(item: cafes[index])
-                .animate()
-                .fadeIn(delay: (index * 60).ms, duration: 300.ms)
-                .slideX(begin: 0.05, end: 0);
+            return _QuietCafeCard(item: cafes[index]);
           },
         ),
       ),
@@ -153,10 +164,7 @@ class _TopMeasurersTab extends ConsumerWidget {
           ),
           itemCount: measurers.length,
           itemBuilder: (context, index) {
-            return _TopMeasurerCard(item: measurers[index])
-                .animate()
-                .fadeIn(delay: (index * 60).ms, duration: 300.ms)
-                .slideX(begin: 0.05, end: 0);
+            return _TopMeasurerCard(item: measurers[index]);
           },
         ),
       ),
@@ -185,10 +193,7 @@ class _ActiveCafesTab extends ConsumerWidget {
           ),
           itemCount: cafes.length,
           itemBuilder: (context, index) {
-            return _ActiveCafeCard(item: cafes[index])
-                .animate()
-                .fadeIn(delay: (index * 60).ms, duration: 300.ms)
-                .slideX(begin: 0.05, end: 0);
+            return _ActiveCafeCard(item: cafes[index]);
           },
         ),
       ),

@@ -38,44 +38,40 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final bottomPad = MediaQuery.of(context).padding.bottom;
     final totalBottom = _filterBarH + _navH + bottomPad;
 
-    return Scaffold(
-      backgroundColor: _kBgWhite,
-      extendBody: true,
-      body: Stack(
-        children: [
-          // ── Map ───────────────────────────────────────────────────────────
-          Positioned.fill(
-            child: MapView(
-              filterLevel: _filter,
-              bottomOffset: totalBottom,
-            ),
+    return Stack(
+      children: [
+        // ── Map ─────────────────────────────────────────────────────────────
+        Positioned.fill(
+          child: MapView(
+            filterLevel: _filter,
+            bottomOffset: totalBottom,
           ),
+        ),
 
-          // ── Search bar (top) ──────────────────────────────────────────────
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                child: _SearchBar(),
-              ),
+        // ── Search bar (top) ────────────────────────────────────────────────
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+              child: _SearchBar(),
             ),
           ),
+        ),
 
-          // ── Filter chips (bottom, above nav) ─────────────────────────────
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: _navH + bottomPad,
-            child: _FilterBar(
-              activeFilter: _filter,
-              onFilterChanged: (f) => setState(() => _filter = f),
-            ),
+        // ── Filter chips (bottom, above nav) ──────────────────────────────
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: _navH + bottomPad,
+          child: _FilterBar(
+            activeFilter: _filter,
+            onFilterChanged: (f) => setState(() => _filter = f),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

@@ -44,9 +44,54 @@
 - `lib/features/home/widgets/map_view.dart` - 범례
 - `lib/features/explore/explore_screen.dart` - 필터 칩
 
+---
+
+## 2026-03-01 (세션 2)
+
+### iOS 26 Beta 호환성 버그 수정
+
+#### 문제 1: Nested Scaffold 렌더링 실패
+- **증상**: 프로필/탐색/랭킹 탭이 아예 표시되지 않음
+- **원인**: iOS 26 beta에서 `_MainShell` Scaffold 내부의 중첩 Scaffold가 렌더링되지 않는 버그
+- **진단 방법**: ProfileScreen을 초록색 Container로 교체 → 네비게이션은 동작, Scaffold 내용만 미표시 확인
+- **수정**:
+  - `home_screen.dart` - Scaffold 제거 → Stack 직접 반환
+  - `profile_screen.dart` - Scaffold 제거 → Container + Column (수동 AppBar)
+  - `explore_screen.dart` - Scaffold 제거 → Container + Stack (FAB은 Positioned으로 처리)
+  - `ranking_screen.dart` - Scaffold 제거 → Container + Column (수동 AppBar + TabBar + Expanded TabBarView)
+
+#### 문제 2: flutter_animate 무한 opacity:0
+- **증상**: flutter_animate의 `.animate().fadeIn()` 호출 시 위젯이 opacity 0으로 고정
+- **원인**: iOS 26 beta CADisplayLink/Ticker 회귀 버그
+- **수정**: `profile_screen.dart`, `ranking_screen.dart`, `settings_screen.dart` 에서 flutter_animate import 및 모든 `.animate()` 체인 제거
+
+#### 문제 3: Google Maps PlatformView 미렌더링
+- **증상**: 홈 탭 지도 영역이 표시되지 않음
+- **원인**: iOS 26 beta에서 TLHC(Texture Layer Hybrid Composition) PlatformView 렌더링 실패
+- **임시 조치**: `map_view.dart` - GoogleMap 위젯을 회색 Container placeholder로 대체
+
+#### 문제 4: ProfileViewModel 무한 로딩
+- **증상**: 프로필 탭이 렌더링은 되지만 로딩 스피너에서 멈춤
+- **원인**: Riverpod 3.x에서 `Notifier.build()` 실행 중 `state` getter 접근 시 StateError 발생
+  ```dart
+  // build() 호출 시 _loadProfile()의 첫 줄이 동기 실행됨
+  Future<void> _loadProfile() async {
+    state = state.copyWith(isLoading: true); // ← build() 완료 전 state 읽기 → StateError
+    await Future.delayed(...);  // 여기까지 도달 불가 → 로딩 영구 유지
+  ```
+- **수정**: `profile_viewmodel.dart` - `_loadProfile()` 최초 라인 `state = state.copyWith(isLoading: true)` 제거 (build()가 이미 `isLoading: true` 반환)
+
+### 현재 상태 (2026-03-01 세션 2 종료)
+- 4개 탭 (홈/탐색/랭킹/프로필) 모두 iOS 26 beta에서 렌더링 정상
+- 프로필 화면: Mock 유저 데이터 정상 표시
+- 지도: 임시 placeholder (Google Maps 미복구)
+- 카페 데이터: Mock 6개 (실제 API 미연동)
+
 ### 향후 계획 (Next Sprint)
+- [ ] 지도 복구: flutter_map(OSM) 또는 Google Maps iOS 26 지원 버전으로 교체
+- [ ] 카페 데이터 API 연동 (Kakao 장소 API 또는 Google Places API)
 - [ ] 측정 화면: 현재 위치 ↔ 카페 위치 거리 비교 (50m 이내 측정 허용)
+- [ ] Firebase Auth + Firestore 실제 연동 (현재 전부 Mock)
 - [ ] 온보딩: 알림 권한 요청 플로우 UI 구현
 - [ ] 즐겨찾기: 카페 저장 기능
 - [ ] 카페 상세: 실시간 소음 업데이트 (Firestore 스트림 연동)
-- [ ] Google Maps API 키 iOS Maps SDK 활성화 (선택)

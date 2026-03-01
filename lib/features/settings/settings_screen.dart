@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:cafeondo/core/constants/app_colors.dart';
@@ -67,10 +66,7 @@ class SettingsScreen extends ConsumerWidget {
                 trailing: _PlanBadge(isPremium: state.isPremium),
               ),
             ],
-          )
-              .animate()
-              .fadeIn(duration: 300.ms)
-              .slideY(begin: 0.05, end: 0),
+          ),
 
           const SizedBox(height: AppDimensions.paddingStandard),
 
@@ -105,10 +101,7 @@ class SettingsScreen extends ConsumerWidget {
                     ref.read(settingsProvider.notifier).setNewCafeAlert(v),
               ),
             ],
-          )
-              .animate()
-              .fadeIn(delay: 60.ms, duration: 300.ms)
-              .slideY(begin: 0.05, end: 0),
+          ),
 
           const SizedBox(height: AppDimensions.paddingStandard),
 
@@ -143,10 +136,7 @@ class SettingsScreen extends ConsumerWidget {
                 value: '한국어',
               ),
             ],
-          )
-              .animate()
-              .fadeIn(delay: 120.ms, duration: 300.ms)
-              .slideY(begin: 0.05, end: 0),
+          ),
 
           const SizedBox(height: AppDimensions.paddingStandard),
 
@@ -164,10 +154,7 @@ class SettingsScreen extends ConsumerWidget {
                 _PremiumUpgradeTile(),
               ],
             ],
-          )
-              .animate()
-              .fadeIn(delay: 180.ms, duration: 300.ms)
-              .slideY(begin: 0.05, end: 0),
+          ),
 
           const SizedBox(height: AppDimensions.paddingStandard),
 
@@ -211,10 +198,7 @@ class SettingsScreen extends ConsumerWidget {
                 ),
               ),
             ],
-          )
-              .animate()
-              .fadeIn(delay: 240.ms, duration: 300.ms)
-              .slideY(begin: 0.05, end: 0),
+          ),
 
           const SizedBox(height: AppDimensions.paddingStandard),
 
@@ -238,10 +222,7 @@ class SettingsScreen extends ConsumerWidget {
                 onTap: () => _confirmDeleteAccount(context, ref),
               ),
             ],
-          )
-              .animate()
-              .fadeIn(delay: 300.ms, duration: 300.ms)
-              .slideY(begin: 0.05, end: 0),
+          ),
 
           const SizedBox(height: AppDimensions.paddingLarge),
         ],

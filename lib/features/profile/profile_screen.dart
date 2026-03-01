@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -18,38 +17,61 @@ class ProfileScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(profileProvider);
 
-    return Scaffold(
-      backgroundColor: AppColors.offWhite,
-      appBar: AppBar(
-        backgroundColor: AppColors.offWhite,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        title: const Text(
-          '프로필',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-            color: AppColors.navy,
-          ),
-        ),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            onPressed: () => context.push(AppRoutes.settings),
-            icon: const Icon(
-              Icons.settings_outlined,
-              color: AppColors.textSecondary,
+    // No inner Scaffold — nested Scaffold doesn't render on iOS 26 beta.
+    // Instead: Column with manual AppBar + Expanded body.
+    return Container(
+      color: AppColors.offWhite,
+      child: Column(
+        children: [
+          // ── AppBar (manual) ─────────────────────────────────────────────
+          SafeArea(
+            bottom: false,
+            child: Container(
+              height: 56,
+              decoration: const BoxDecoration(
+                color: AppColors.offWhite,
+                border: Border(
+                  bottom: BorderSide(color: AppColors.divider, width: 0.5),
+                ),
+              ),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  const Text(
+                    '프로필',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.navy,
+                    ),
+                  ),
+                  Positioned(
+                    right: 4,
+                    child: IconButton(
+                      onPressed: () => context.push(AppRoutes.settings),
+                      icon: const Icon(
+                        Icons.settings_outlined,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
+          ),
+          // ── Body ────────────────────────────────────────────────────────
+          Expanded(
+            child: state.isLoading
+                ? const Center(
+                    child: CircularProgressIndicator(
+                        color: AppColors.mutedTeal),
+                  )
+                : state.isLoggedIn
+                    ? _LoggedInBody(state: state)
+                    : const _LoginPrompt(),
           ),
         ],
       ),
-      body: state.isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: AppColors.mutedTeal),
-            )
-          : state.isLoggedIn
-              ? _LoggedInBody(state: state)
-              : const _LoginPrompt(),
     );
   }
 }
@@ -75,10 +97,7 @@ class _LoggedInBody extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // ── Header ────────────────────────────────────────────────────
-            _ProfileHeader(profile: profile)
-                .animate()
-                .fadeIn(duration: 350.ms)
-                .slideY(begin: -0.1, end: 0),
+            _ProfileHeader(profile: profile),
 
             const SizedBox(height: AppDimensions.paddingStandard),
 
@@ -87,10 +106,7 @@ class _LoggedInBody extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(
                   horizontal: AppDimensions.paddingStandard),
               child: _LevelCard(profile: profile),
-            )
-                .animate()
-                .fadeIn(delay: 100.ms, duration: 350.ms)
-                .slideY(begin: 0.1, end: 0),
+            ),
 
             const SizedBox(height: AppDimensions.paddingStandard),
 
@@ -103,37 +119,26 @@ class _LoggedInBody extends ConsumerWidget {
                 registeredCafes: registeredCount,
                 points: profile.points,
               ),
-            )
-                .animate()
-                .fadeIn(delay: 150.ms, duration: 350.ms),
+            ),
 
             const SizedBox(height: AppDimensions.paddingSection),
 
             // ── 내 측정 기록 ──────────────────────────────────────────────
-            _SectionHeader(title: '내 측정 기록')
-                .animate()
-                .fadeIn(delay: 200.ms, duration: 350.ms),
+            _SectionHeader(title: '내 측정 기록'),
 
             if (state.recentMeasurements.isEmpty)
               _EmptyMeasurements()
             else
-              ...state.recentMeasurements.asMap().entries.map((entry) {
-                return _MeasurementItem(record: entry.value)
-                    .animate()
-                    .fadeIn(delay: (250 + entry.key * 50).ms, duration: 300.ms)
-                    .slideX(begin: 0.05, end: 0);
-              }),
+              ...state.recentMeasurements.map(
+                (record) => _MeasurementItem(record: record),
+              ),
 
             const SizedBox(height: AppDimensions.paddingSection),
 
             // ── 뱃지 ──────────────────────────────────────────────────────
-            _SectionHeader(title: '뱃지')
-                .animate()
-                .fadeIn(delay: 300.ms, duration: 350.ms),
+            _SectionHeader(title: '뱃지'),
 
-            _BadgeSection(badges: state.badges)
-                .animate()
-                .fadeIn(delay: 350.ms, duration: 350.ms),
+            _BadgeSection(badges: state.badges),
 
             const SizedBox(height: AppDimensions.paddingSection),
 
@@ -161,9 +166,7 @@ class _LoggedInBody extends ConsumerWidget {
                   ),
                 ),
               ),
-            )
-                .animate()
-                .fadeIn(delay: 400.ms, duration: 350.ms),
+            ),
 
             const SizedBox(height: AppDimensions.paddingLarge),
           ],

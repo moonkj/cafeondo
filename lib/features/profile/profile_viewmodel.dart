@@ -168,7 +168,6 @@ class ProfileViewModel extends Notifier<ProfileState> {
   }
 
   Future<void> _loadProfile() async {
-    state = state.copyWith(isLoading: true);
     await Future.delayed(const Duration(milliseconds: 500));
     if (!ref.mounted) return;
 
@@ -191,7 +190,10 @@ class ProfileViewModel extends Notifier<ProfileState> {
     );
   }
 
-  Future<void> refresh() => _loadProfile();
+  Future<void> refresh() {
+    state = state.copyWith(isLoading: true);
+    return _loadProfile();
+  }
 
   Future<void> signOut() async {
     state = state.copyWith(isLoading: true);

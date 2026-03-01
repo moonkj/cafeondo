@@ -123,150 +123,162 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   Widget build(BuildContext context) {
     final cafesAsync = ref.watch(cafesProvider);
 
-    return Scaffold(
-      backgroundColor: _kOffWhite,
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ── Header + Search Bar ──────────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Title row
-                  Row(
+    return Container(
+      color: _kOffWhite,
+      child: Stack(
+        children: [
+          SafeArea(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // ── Header + Search Bar ────────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        '탐색',
-                        style: TextStyle(
-                          color: _kNavy,
-                          fontSize: 26,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: -0.5,
-                          fontFamily: GoogleFonts.notoSansKr().fontFamily,
+                      // Title row
+                      Row(
+                        children: [
+                          Text(
+                            '탐색',
+                            style: TextStyle(
+                              color: _kNavy,
+                              fontSize: 26,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: -0.5,
+                              fontFamily: GoogleFonts.notoSansKr().fontFamily,
+                            ),
+                          ),
+                          const Spacer(),
+                          // Cafe count badge
+                          cafesAsync.when(
+                            data: (cafes) {
+                              final filtered = _applyFilters(cafes);
+                              return Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: _kLightTeal,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  '${filtered.length}개의 카페',
+                                  style: TextStyle(
+                                    color: _kDeepTeal,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    fontFamily:
+                                        GoogleFonts.notoSansKr().fontFamily,
+                                  ),
+                                ),
+                              );
+                            },
+                            loading: () => const SizedBox.shrink(),
+                            error: (_, __) => const SizedBox.shrink(),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 14),
+
+                      // Search Bar
+                      _ExploreSearchBar(
+                        controller: _searchController,
+                        searchQuery: _searchQuery,
+                        onChanged: (q) => setState(() => _searchQuery = q),
+                        onClear: () {
+                          _searchController.clear();
+                          setState(() => _searchQuery = '');
+                        },
+                      ),
+
+                      const SizedBox(height: 14),
+
+                      // Filter chips
+                      SizedBox(
+                        height: 36,
+                        child: ListView(
+                          scrollDirection: Axis.horizontal,
+                          children: _ExploreFilter.values.map((f) {
+                            return _FilterChip(
+                              label: f.label,
+                              isActive: _activeFilter == f,
+                              onTap: () => setState(() => _activeFilter = f),
+                            );
+                          }).toList(),
                         ),
                       ),
-                      const Spacer(),
-                      // Cafe count badge
-                      cafesAsync.when(
-                        data: (cafes) {
-                          final filtered = _applyFilters(cafes);
-                          return Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: _kLightTeal,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              '${filtered.length}개의 카페',
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 8),
+
+                // ── Divider ───────────────────────────────────────────
+                Container(height: 1, color: _kWarmBeige.withOpacity(0.6)),
+
+                // ── Cafe List ─────────────────────────────────────────
+                Expanded(
+                  child: cafesAsync.when(
+                    loading: () => const Center(
+                      child: CircularProgressIndicator(
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(_kMutedTeal),
+                        strokeWidth: 2,
+                      ),
+                    ),
+                    error: (err, _) => Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(32),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.error_outline_rounded,
+                                size: 48, color: _kNavy.withOpacity(0.25)),
+                            const SizedBox(height: 12),
+                            Text(
+                              '불러오는 중 오류가 발생했어요',
                               style: TextStyle(
-                                color: _kDeepTeal,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
+                                color: _kNavy.withOpacity(0.5),
+                                fontSize: 15,
                                 fontFamily:
                                     GoogleFonts.notoSansKr().fontFamily,
                               ),
                             ),
-                          );
-                        },
-                        loading: () => const SizedBox.shrink(),
-                        error: (_, __) => const SizedBox.shrink(),
+                          ],
+                        ),
                       ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 14),
-
-                  // Search Bar
-                  _ExploreSearchBar(
-                    controller: _searchController,
-                    searchQuery: _searchQuery,
-                    onChanged: (q) => setState(() => _searchQuery = q),
-                    onClear: () {
-                      _searchController.clear();
-                      setState(() => _searchQuery = '');
+                    ),
+                    data: (cafes) {
+                      final filtered = _applyFilters(cafes);
+                      if (filtered.isEmpty) {
+                        return _EmptyState(query: _searchQuery);
+                      }
+                      return ListView.separated(
+                        padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
+                        physics: const BouncingScrollPhysics(),
+                        itemCount: filtered.length,
+                        separatorBuilder: (_, __) =>
+                            const SizedBox(height: 10),
+                        itemBuilder: (context, i) =>
+                            CafeCard(cafe: filtered[i]),
+                      );
                     },
                   ),
-
-                  const SizedBox(height: 14),
-
-                  // Filter chips
-                  SizedBox(
-                    height: 36,
-                    child: ListView(
-                      scrollDirection: Axis.horizontal,
-                      children: _ExploreFilter.values.map((f) {
-                        return _FilterChip(
-                          label: f.label,
-                          isActive: _activeFilter == f,
-                          onTap: () => setState(() => _activeFilter = f),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 8),
-
-            // ── Divider ───────────────────────────────────────────────────
-            Container(height: 1, color: _kWarmBeige.withOpacity(0.6)),
-
-            // ── Cafe List ─────────────────────────────────────────────────
-            Expanded(
-              child: cafesAsync.when(
-                loading: () => const Center(
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(_kMutedTeal),
-                    strokeWidth: 2,
-                  ),
                 ),
-                error: (err, _) => Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(32),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.error_outline_rounded,
-                            size: 48, color: _kNavy.withOpacity(0.25)),
-                        const SizedBox(height: 12),
-                        Text(
-                          '불러오는 중 오류가 발생했어요',
-                          style: TextStyle(
-                            color: _kNavy.withOpacity(0.5),
-                            fontSize: 15,
-                            fontFamily: GoogleFonts.notoSansKr().fontFamily,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                data: (cafes) {
-                  final filtered = _applyFilters(cafes);
-                  if (filtered.isEmpty) {
-                    return _EmptyState(query: _searchQuery);
-                  }
-                  return ListView.separated(
-                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
-                    physics: const BouncingScrollPhysics(),
-                    itemCount: filtered.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 10),
-                    itemBuilder: (context, i) => CafeCard(cafe: filtered[i]),
-                  );
-                },
-              ),
+              ],
             ),
-          ],
-        ),
+          ),
+
+          // ── FAB: 카페 등록 ───────────────────────────────────────────
+          Positioned(
+            bottom: 16,
+            right: 16,
+            child: _RegisterFab(onTap: _showRegisterSheet),
+          ),
+        ],
       ),
-
-      // ── FAB: 카페 등록 ─────────────────────────────────────────────────
-      floatingActionButton: _RegisterFab(onTap: _showRegisterSheet),
     );
   }
 }
